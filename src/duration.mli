@@ -77,7 +77,5 @@ module type S = sig
   end
 end
 
-include S
-
 module Make (I : Implem) (U : Unix) : S with type t = I.t
 

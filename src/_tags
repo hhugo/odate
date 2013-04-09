@@ -1,0 +1,4 @@
+<duration*.{ml,mli}>: package(lwt)
+<duration_unix.{ml,mli}>: package(lwt.unix)
+<duration_js.{ml,mli}>: package(js_of_ocaml)
+true: use_menhir
