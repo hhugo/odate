@@ -13,6 +13,8 @@ module M = Duration.Make
         then 0,duration
         else d,duration mod diviseur
     end)(struct
-    let sleep x = Lwt_js.sleep (float_of_int (x * 1000))
+    let sleep x =
+      let s = float_of_int x /. 1000. in
+      Lwt_js.sleep s
   end)
 include M

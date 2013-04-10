@@ -84,7 +84,7 @@ module Make (I : Implem)(U : Unix)  = struct
       | None -> acc
       | Some v -> v * fact + acc in
     let r = List.fold_left aux 0 [
-        ms, ms_in_s;
+        ms, ms_in_ms;
         s,ms_in_s;
         m,ms_in_min;
         h,ms_in_hour;
