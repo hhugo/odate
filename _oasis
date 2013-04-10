@@ -12,10 +12,13 @@ Authors: Hugo Heuzard
 BuildTools: ocamlbuild
 Plugins: DevFiles (0.3), META (0.3)
 
+Synopsis: Date & Duration Library
+
 Library "time"
   Install: true
   Path: src
   Modules: Date, Duration
+  BuildDepends: lwt
 
 Library "time-unix"
   FindlibName: unix
@@ -23,7 +26,7 @@ Library "time-unix"
   Install: true
   Path: src/unix
   Modules: Date_unix, Duration_unix
-  BuildDepends: lwt.unix
+  BuildDepends: time,lwt.unix
 
 Library "time-js"
   FindlibName: js
@@ -31,4 +34,10 @@ Library "time-js"
   Install: true
   Path: src/js
   Modules: Date_js, Duration_js
-  BuildDepends: js_of_ocaml
+  BuildDepends: time,js_of_ocaml,js_of_ocaml.syntax
+
+Executable test_unix
+  Path: test
+  CompiledObject: best
+  MainIs: test.ml
+  BuildDepends: time.unix

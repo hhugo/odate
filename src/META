@@ -1,0 +1,33 @@
+# OASIS_START
+# DO NOT EDIT (digest: 9bc08b1d8df970485d53ac74de11fa97)
+version = "1.0.0"
+description = "Date & Duration Library"
+requires = "lwt"
+archive(byte) = "time.cma"
+archive(byte, plugin) = "time.cma"
+archive(native) = "time.cmxa"
+archive(native, plugin) = "time.cmxs"
+exists_if = "time.cma"
+package "unix" (
+ version = "1.0.0"
+ description = "Date & Duration Library"
+ requires = "time lwt.unix"
+ archive(byte) = "time-unix.cma"
+ archive(byte, plugin) = "time-unix.cma"
+ archive(native) = "time-unix.cmxa"
+ archive(native, plugin) = "time-unix.cmxs"
+ exists_if = "time-unix.cma"
+)
+
+package "js" (
+ version = "1.0.0"
+ description = "Date & Duration Library"
+ requires = "time js_of_ocaml js_of_ocaml.syntax"
+ archive(byte) = "time-js.cma"
+ archive(byte, plugin) = "time-js.cma"
+ archive(native) = "time-js.cmxa"
+ archive(native, plugin) = "time-js.cmxs"
+ exists_if = "time-js.cma"
+)
+# OASIS_STOP
+

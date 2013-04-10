@@ -6,3 +6,7 @@ _build
 *.cmxs
 *.cmxa
 *#*
+setup.data
+setup.log
+*.native
+*.byte
