@@ -33,6 +33,7 @@ Library "time-js"
   FindlibParent: time
   Install: true
   Path: src/js
+  CompiledObject: byte
   Modules: Date_js, Duration_js
   BuildDepends: time,js_of_ocaml,js_of_ocaml.syntax
 

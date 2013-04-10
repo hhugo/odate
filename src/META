@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9bc08b1d8df970485d53ac74de11fa97)
+# DO NOT EDIT (digest: 283c5bb5096e188bc9db9c8b5e2a4d9a)
 version = "1.0.0"
 description = "Date & Duration Library"
 requires = "lwt"
@@ -25,8 +25,6 @@ package "js" (
  requires = "time js_of_ocaml js_of_ocaml.syntax"
  archive(byte) = "time-js.cma"
  archive(byte, plugin) = "time-js.cma"
- archive(native) = "time-js.cmxa"
- archive(native, plugin) = "time-js.cmxs"
  exists_if = "time-js.cma"
 )
 # OASIS_STOP
