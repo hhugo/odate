@@ -1,0 +1,34 @@
+# +-------------------------------------------------------------------+
+# | Package parameters                                                |
+# +-------------------------------------------------------------------+
+
+OASISFormat: 0.3
+OCamlVersion: >= 3.12
+Name: time
+Version: 1.0.0
+LicenseFile: COPYING
+License: LGPL-2.1 with OCaml linking exception
+Authors: Hugo Heuzard
+BuildTools: ocamlbuild
+Plugins: DevFiles (0.3), META (0.3)
+
+Library "time"
+  Install: true
+  Path: src
+  Modules: Date, Duration
+
+Library "time-unix"
+  FindlibName: unix
+  FindlibParent: time
+  Install: true
+  Path: src/unix
+  Modules: Date_unix, Duration_unix
+  BuildDepends: lwt.unix
+
+Library "time-js"
+  FindlibName: js
+  FindlibParent: time
+  Install: true
+  Path: src/js
+  Modules: Date_js, Duration_js
+  BuildDepends: js_of_ocaml

@@ -1,0 +1,4 @@
+<{duration,date}*.{ml,mli}>: package(lwt)
+<*_unix.{ml,mli}>: package(lwt.unix)
+<*_js.{ml,mli}>: syntax(camlp4o),package(js_of_ocaml.syntax,js_of_ocaml)
+true: use_menhir
