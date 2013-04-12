@@ -16,18 +16,13 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
       | Some p -> p
       | None -> failwith "could not generate parser" in
     let _ =
-      try
-        let d = Date.From.string format "Wed Aug 27 13:08:45 +0000 2008" in
-        let printer = match Date.To.generate_printer "%a %b %d %T %z %Y" with
-          | Some p -> p
-          | None -> failwith "could not generate printer" in
-        let s = Date.To.string printer d in
-        print_endline s;
-        ()
-      with Date.Parsing(exc,ptr) ->
-        print_endline "A";
-        print_endline (Date.info_of_ptr ptr);
-        print_endline "B" in
+      let d = Date.From.string format "Wed Aug 27 13:08:45 +0000 2008" in
+      let printer = match Date.To.generate_printer "%a %b %d %T %z %Y" with
+        | Some p -> p
+        | None -> failwith "could not generate printer" in
+      let s = Date.To.string printer d in
+      print_endline s;
+      () in
     Lwt.return_unit
 end
 
