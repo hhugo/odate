@@ -4,7 +4,7 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
   open Lwt
   let test1 =
     let a = Date.now () in
-    let d1 = Duration.From.ms 2999 in
+    let d1 = Duration.From.ms 999 in
     Duration.sleep d1  >>= fun () ->
     let b = Date.now () in
     let d2 = Date.between a b in
@@ -12,6 +12,22 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
     let s2 = Duration.To.string Duration.To.default_printer d1 in
     let _ = print_endline s1 in
     let _ = print_endline s2 in
+    let format = match Date.From.generate_parser "%a %b %d %T %z %Y" with
+      | Some p -> p
+      | None -> failwith "could not generate parser" in
+    let _ =
+      try
+        let d = Date.From.string format "Wed Aug 27 13:08:45 +0000 2008" in
+        let printer = match Date.To.generate_printer "%a %b %d %T %z %Y" with
+          | Some p -> p
+          | None -> failwith "could not generate printer" in
+        let s = Date.To.string printer d in
+        print_endline s;
+        ()
+      with Date.Parsing(exc,ptr) ->
+        print_endline "A";
+        print_endline (Date.info_of_ptr ptr);
+        print_endline "B" in
     Lwt.return_unit
 end
 

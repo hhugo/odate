@@ -205,13 +205,13 @@ module Weekday = struct
   let to_string x = !stringifier x
 
   let stringifier_abbr = ref (function
-      | `Sunday -> "Sunday"
-      | `Monday -> "Monday"
-      | `Tuesday -> "Tuesday"
-      | `Wednesday -> "Wednesday"
-      | `Thursday -> "Thursday"
-      | `Friday -> "Friday"
-      | `Saturday -> "Saturday")
+      | `Sunday -> "Sun"
+      | `Monday -> "Mon"
+      | `Tuesday -> "Tue"
+      | `Wednesday -> "Wed"
+      | `Thursday -> "Thu"
+      | `Friday -> "Fri"
+      | `Saturday -> "Sat")
   let set_stringifier_abbr f = stringifier_abbr := f
   let to_string_short x = !stringifier_abbr x
 end
@@ -264,18 +264,18 @@ module Month = struct
   let to_string x = !stringifier x
 
   let stringifier_abbr = ref(function
-      | `January -> "January"
-      | `February -> "February"
-      | `March -> "March"
-      | `April -> "April"
+      | `January -> "Jan"
+      | `February -> "Feb"
+      | `March -> "Mar"
+      | `April -> "Apr"
       | `Mai -> "Mai"
-      | `June -> "June"
-      | `July -> "July"
-      | `August -> "August"
-      | `September -> "September"
-      | `October -> "October"
-      | `November -> "November"
-      | `December -> "December")
+      | `June -> "Jun"
+      | `July -> "Jul"
+      | `August -> "Aug"
+      | `September -> "Sep"
+      | `October -> "Oct"
+      | `November -> "Nov"
+      | `December -> "Dec")
 
   let set_stringifier_abbr f = stringifier_abbr := f
   let to_string_short x = !stringifier_abbr x
@@ -441,7 +441,7 @@ module Make(Implem : Implem)(D : Duration.S) = struct
           let w = Weekday.of_int i in
           let s = Weekday.to_string w in
           let s = if short then String.sub s 0 3 else s in
-          (parse_constant_i s >>=| w) :: acc in
+          loop (succ i) ((parse_constant_i s >>=| w) :: acc) in
       parse_sum (loop 0 [(fun ptr -> failwith "weekday")])
 
     let parse_month short =
@@ -452,7 +452,7 @@ module Make(Implem : Implem)(D : Duration.S) = struct
           let m = Month.of_int i in
           let s = Month.to_string m in
           let s = if short then String.sub s 0 3 else s in
-          (parse_constant_i s >>=| m) :: acc in
+          loop (succ i) ((parse_constant_i s >>=| m) :: acc) in
       parse_sum (loop 1 [])
 
     let parse_seq l ptr =
