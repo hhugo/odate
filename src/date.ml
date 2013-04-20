@@ -82,6 +82,8 @@ module type S = sig
   val make : ?tz:tz -> ?s:int -> ?m:int -> ?h:int -> day:int -> month:month -> year:int -> unit -> t
   (* make date in gmt *)
   val move : t -> d -> t
+  val advance_by_minutes : t -> int -> t
+  val advance_by_hours : t -> int -> t
   val advance_by_days : t -> int -> t
   val advance_by_months : t -> int -> t
   val advance_by_years : t -> int -> t
@@ -711,6 +713,13 @@ module Make(Implem : Implem)(D : Duration.S) = struct
     let month = Month.of_int month in
     let human = { human with month ; year = human.year + dy} in
     From.human human
+
+
+  let advance_by_minutes t h =
+    move t (D.From.m h)
+
+  let advance_by_hours t h =
+    move t (D.From.h h)
 
   let advance_by_days t day =
     calendar_advance t {D.zero_human with Duration.day}
