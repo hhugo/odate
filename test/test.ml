@@ -8,10 +8,13 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
     Duration.sleep d1  >>= fun () ->
     let b = Date.now () in
     let d2 = Date.between a b in
+    let d3 = Date.between b a in
     let s1 = Duration.To.string Duration.To.default_printer d2 in
     let s2 = Duration.To.string Duration.To.default_printer d1 in
+    let s3 = Duration.To.string Duration.To.default_printer d3 in
     let _ = print_endline s1 in
     let _ = print_endline s2 in
+    let _ = print_endline s3 in
     let format = match Date.From.generate_parser "%a %b %d %T %z %Y" with
       | Some p -> p
       | None -> failwith "could not generate parser" in

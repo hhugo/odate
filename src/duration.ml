@@ -147,15 +147,15 @@ module Make (I : Implem)(U : Unix)  = struct
       | None -> failwith "could not generate printer"
     let default_printer =
       let fmt =
-        "[%>:[%D:[#=1:tomorrow :in ]]]" ^
+        "[%>:[%D:[#=1:tomorrow :[%s:[#>0:in ]]]]]" ^
         "[%Y:[#>0:# year[#>1:s] ][#=0:" ^
         "[%M:[#>0:# month[#>1:s] ][#=0:" ^
         "[%D:[#>1:# day[#>1:s] ][#=0:" ^  (* we don't print days for #=1, because that was taken care with tomorrow/yesterday *)
         "[%h:[#>0:# hour[#>1:s] ][#=0:" ^
         "[%m:[#>0:# minute[#>1:s] ][#=0:" ^
-        "[%s:[#>0:# second[#>1:s] :now ]" ^
+        "[%s:[#>0:# second[#>1:s] :just now ]" ^
         "]]]]]]]]]]]" ^
-        "[%<:[%D:[#=1:yesterday :ago ]]]" in
+        "[%<:[%D:[#=1:yesterday :[%s:[#>0:ago]] ]]]" in
       generate_or_exit fmt
 
     let string (printer : printer) t = printer (I.to_ms t) 0
