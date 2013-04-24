@@ -704,12 +704,12 @@ module Make(Implem : Implem)(D : Duration.S) = struct
                    day= add human.day day;
                    year= add human.year year;
                 } in
-    let m = (Month.to_int human.month) + month in
-    let month,dy =
+    let m = add (Month.to_int human.month) month in
+    let dy = if m < 1 then -1 else if m > 12 then 1 else 0 in
+    let month =
       if m > 12 || m < 1
-      then
-        (mod_normalized (m - 1) 12) + 1 , (m - 1) / 12
-      else m,0 in
+      then (mod_normalized (m - 1) 12) + 1
+      else m in
     let month = Month.of_int month in
     let human = { human with month ; year = human.year + dy} in
     From.human human
