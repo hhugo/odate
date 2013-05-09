@@ -26,6 +26,13 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
       let s = Date.To.string printer d in
       print_endline s;
       () in
+    let  s = Date.now () in
+    for i = -40 to 40 do
+      let s' = Date.advance_by_months s i in
+      let s'' = Date.end_of_the_month s' in
+      let s''' = Date.Printer.to_default s'' in
+      print_endline s'''
+    done;
     Lwt.return_unit
 end
 
