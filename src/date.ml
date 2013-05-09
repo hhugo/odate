@@ -781,7 +781,7 @@ module Make(Implem : Implem)(D : Duration.S) = struct
         else 1 in
       let date' = advance_by_days date day in
       let hum' = To.human date' in
-      if hum.wday = hum'.wday
+      if hum.month = hum'.month
       then loop hum' date'
       else date
     in loop (To.human date) date
