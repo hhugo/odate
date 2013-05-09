@@ -705,7 +705,9 @@ module Make(Implem : Implem)(D : Duration.S) = struct
                    year= add human.year year;
                 } in
     let m = add (Month.to_int human.month) month in
-    let dy = if m < 1 then -1 else if m > 12 then 1 else 0 in
+    let dy =
+      let dd = (m-1) / 12 in
+      if m < 1 then dd - 1 else dd in
     let month =
       if m > 12 || m < 1
       then (mod_normalized (m - 1) 12) + 1
