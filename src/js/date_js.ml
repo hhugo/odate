@@ -46,14 +46,9 @@ module Implem : Date.Implem = struct
 
   let from_human ?tz h =
     let open Date in
-
-    let tz = match tz with
-      | None -> h.tz
-      | Some tz -> tz in
-
     let t = jsnew Js.date_sec (h.year,Month.to_int h.month - 1,h.day,h.h,h.m,h.s) in
     let t = Int64.of_float (Js.to_float (t##getTime()) /. 1000.) in
-    let offset = get_dst_timezone t - tz in
+    let offset = match tz with | Some tz -> get_dst_timezone t - tz | None -> 0 in
     Int64.add (Int64.of_int offset) t
 
   let now () = Int64.of_float (((Js.to_float ((jsnew Js.date_now ())##getTime())) +. !diff) /. 1000.)
