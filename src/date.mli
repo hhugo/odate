@@ -12,7 +12,7 @@ type month =
   | `February
   | `March
   | `April
-  | `Mai
+  | `May
   | `June
   | `July
   | `August

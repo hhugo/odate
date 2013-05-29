@@ -12,7 +12,7 @@ type month =
   | `February
   | `March
   | `April
-  | `Mai
+  | `May
   | `June
   | `July
   | `August
@@ -224,7 +224,7 @@ module Month = struct
     | 2 -> `February
     | 3 -> `March
     | 4 -> `April
-    | 5 -> `Mai
+    | 5 -> `May
     | 6 -> `June
     | 7 -> `July
     | 8 -> `August
@@ -239,7 +239,7 @@ module Month = struct
     | `February -> 2
     | `March -> 3
     | `April -> 4
-    | `Mai -> 5
+    | `May -> 5
     | `June -> 6
     | `July -> 7
     | `August -> 8
@@ -253,7 +253,7 @@ module Month = struct
       | `February -> "February"
       | `March -> "March"
       | `April -> "April"
-      | `Mai -> "Mai"
+      | `May -> "May"
       | `June -> "June"
       | `July -> "July"
       | `August -> "August"
@@ -270,7 +270,7 @@ module Month = struct
       | `February -> "Feb"
       | `March -> "Mar"
       | `April -> "Apr"
-      | `Mai -> "Mai"
+      | `May -> "May"
       | `June -> "Jun"
       | `July -> "Jul"
       | `August -> "Aug"

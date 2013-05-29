@@ -20,6 +20,7 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
       | None -> failwith "could not generate parser" in
     let _ =
       let d = Date.From.string format "Wed Aug 27 13:08:45 +0000 2008" in
+      let d = Date.From.string format "Wed May 29 20:20:23 +0000 2013" in
       let printer = match Date.To.generate_printer "%a %b %d %T %z %Y" with
         | Some p -> p
         | None -> failwith "could not generate printer" in
