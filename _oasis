@@ -20,6 +20,16 @@ Library "time"
   Modules: Date, Duration
   InternalModules: Date_lexer,Duration_lexer,Duration_parser,Duration_private
 
+Document "date-api"
+  Title: API reference for Lwt
+  Type: ocamlbuild (0.3)
+  Install: true
+  InstallDir: $htmldir/api
+  BuildTools: ocamldoc
+  XOCamlbuildPath: ./
+  XOCamlbuildLibraries:
+    time
+
 Executable test_unix
   Path: test
   CompiledObject: best
