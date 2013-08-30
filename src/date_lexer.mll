@@ -1,25 +1,43 @@
 {
 open Lexing
+
+type options =
+[ `Pad of char
+| `NoPad
+| `None
+| `Upper
+| `Tz of int ]
+
 type t =
   | String of string
-  | Directive of char option * char
+  | Directive of options * char
   | Space
   | EOL
 }
 
-let padding = ['_' '-' '0']
 let directive = ['a'-'z' 'A'-'Z']
 
+      
 rule tokens = parse
   | "%%" {String "%"}
-  | '%' padding ? directive {
-      let c1 = (Lexing.lexeme_char lexbuf 1) in
-      let padding, directive =
-        if c1 = '-' || c1 = '_' || c1 = '0'
-        then Some c1, (Lexing.lexeme_char lexbuf 2)
-        else None, c1 in
-      Directive (padding,directive)
+  | '%' {
+      let opt = options lexbuf in
+      let dir = directive lexbuf in
+      Directive (opt,dir)
     }
   | [ '\n' '\t' ' ' ] * eof { EOL }
   | [ '\n' '\t' ' ' ] + { Space }
   | [^ '%' '\n' '\t' ' ' ] + { String (Lexing.lexeme lexbuf)}
+
+and directive = parse
+  | ['a'-'z' 'A'-'Z'] {Lexing.lexeme_char lexbuf 0}
+
+and options = parse
+  | '_'   { `Pad ' ' }
+  | '0'   { `Pad '0' }
+  | '-'   { `NoPad }
+  | '^'   { `Upper }
+  | ":::" { `Tz 3 }
+  | "::"  { `Tz 2 }
+  | ':'   { `Tz 1 }
+  | ""    { `None }

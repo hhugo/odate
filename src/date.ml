@@ -565,13 +565,15 @@ module Make(Implem : Implem)(D : Duration.S) = struct
         in
         let parser_ = loop (fun _ d -> d) l in
         Some (fun ptr d -> parser_ ptr d)
-      with _ -> None
+      with _e ->
+(*        print_endline (Printexc.to_string _e); *)
+        None
 
     let _ =
       let abbr = List.rev_map (fun (c,abbr) ->
           match generate_parser abbr with
             | Some p -> c,(fun ptr d -> p ptr d)
-            | None -> failwith "could not generate_abbreviations"
+            | None -> failwith (Printf.sprintf "could not generate_abbreviations for %c" c)
         ) abbreviations in
       List.iter add_abbr abbr
 
@@ -597,11 +599,13 @@ module Make(Implem : Implem)(D : Duration.S) = struct
 
     let pad (i,padopt,paddefault,size) =
       let padi = match padopt with
-        | None | Some '-' -> paddefault
-        | Some c -> c in
-      let padi = match padi with '_' -> ' ' | c -> c in
+        | `None -> Some paddefault
+        | `Pad c -> Some c
+        | `NoPad | `Upper | `Tz _ -> None in
       let s = string_of_int i in
-      fill s size padi
+      match padi with
+        | None -> s
+        | Some padi -> fill s size padi
     let parse_directive,add_abbr =
       let l = ref [
           ('a', false, (fun (_, d) -> String.sub (Weekday.to_string d.wday) 0 3 ));
@@ -622,17 +626,28 @@ module Make(Implem : Implem)(D : Duration.S) = struct
           ('S', true,  (fun (p, d) -> pad(d.s, p, '0', 2)));
           ('u', false, (fun (_, d) -> let wd = Weekday.to_int d.wday in string_of_int (if wd == 0 then 7 else wd)));
           ('w', false, (fun (_, d) -> string_of_int(Weekday.to_int d.wday )));
-          ('y', false, (fun (_, d) -> pad(d.year mod 100, Some '0', '0', 2)));
+          ('y', false, (fun (_, d) -> pad(d.year mod 100, `Pad '0', '0', 2)));
           ('Y', true,  (fun (p, d) -> pad(d.year , p, '_', 4)));
-          ('z', true,  (fun (_, d) ->
+          ('z', true,  (fun (p, d) ->
              let sign,tz =
                if d.tz < 0
                then "-", - d.tz
                else "+", d.tz in
              let min = (tz / 60) in
-             let hour = pad(min / 60, Some '0', '0', 2) in
-             let min =  pad(min mod 60, Some '0', '0', 2) in
-             sign ^ hour ^ ":" ^ min ));
+             let sec = tz mod 60 in
+             let hour = pad(min / 60, `Pad '0', '0', 2) in
+             let min =  pad(min mod 60, `Pad '0', '0', 2) in
+             let sec =  pad(sec, `Pad '0', '0', 2) in
+             match p with
+               | `Tz 1 -> sign ^ hour ^ ":" ^ min
+               | `Tz 2 -> sign ^ hour ^ ":" ^ min ^ ":" ^ sec
+               | `Tz 3 -> sign ^ hour
+               | `Tz _
+               | `Upper
+               | `NoPad
+               | `Pad _
+               | `None -> sign ^ hour ^ min
+                ));
         ] in
       let rec assoc c = function
         | (c',a,b)::_ when c=c' -> a,b
@@ -652,7 +667,7 @@ module Make(Implem : Implem)(D : Duration.S) = struct
               begin
                 let allow, f = parse_directive c in
                 match allow,p with
-                  | false,Some _ -> failwith "not padding here"
+                  | false, `Pad _ -> failwith "not padding here"
                   | _ -> fun buf d -> let s = f (p, d) in Buffer.add_string buf s
               end
             | EOL -> assert false) tokens
