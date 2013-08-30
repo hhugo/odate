@@ -676,7 +676,7 @@ module Make(Implem : Implem)(D : Duration.S) = struct
       format h
   end
 
-  let between t1 t2 = D.sub (D.From.s (Implem.to_seconds t2)) (D.From.s (Implem.to_seconds t1))
+  let between t1 t2 = D.(-) (D.From.s (Implem.to_seconds t2)) (D.From.s (Implem.to_seconds t1))
   let in_between t1 t2 =
     let d = D.To.s (between t1 t2) / 2 in
     Implem.add t1 d
@@ -859,3 +859,69 @@ module Make(Implem : Implem)(D : Duration.S) = struct
   end
 
 end
+
+
+module UnixImplem : Implem = struct
+  type t = int
+
+  let compare = Pervasives.compare
+
+  let add = (+)
+  let from_seconds x = x
+  let to_seconds x = x
+
+  let one_hour = 3600
+
+  let timezone_s ?dst () =
+    let open Unix in
+    let t,dst = match dst with
+      | None -> time (),false
+      | Some t -> float_of_int t,true in
+    let x = gmtime t in
+    let y = localtime t in
+    let x',_ = mktime x in
+    let y',{tm_isdst} = mktime y in
+    let i = int_of_float (y' -. x') in
+    if tm_isdst && not dst
+    then i - one_hour
+    else i
+
+  let get_std_timezone () = timezone_s ()
+  let get_dst_timezone dst = timezone_s ~dst ()
+  let to_human ?(tz=0) t =
+    let open Unix in
+    let tm = gmtime (float_of_int (t +  tz)) in
+    {
+      s = tm.tm_sec;	(*	Seconds 0..60	*)
+  	  m = tm.tm_min;	(*	Minutes 0..59	*)
+  	  h = tm.tm_hour;	(*	Hours 0..23	*)
+  	  day = tm.tm_mday;	(*	Day of month 1..31	*)
+  	  month = Month.of_int (tm.tm_mon + 1);	(*	Month of year 0..11	*)
+  	  year = tm.tm_year + 1900;	(*	Year - 1900	*)
+  	  wday = Weekday.of_int (tm.tm_wday);	(*	Day of week (Sunday is 0)	*)
+      tz;
+    }
+  let now () = int_of_float (Unix.time ())
+  let now_milliseconds () = Unix.gettimeofday () *. 1000.
+  let from_human ?tz {s;m;h;day;month;year;tz=tz'} =
+    let tz = match tz with
+      | None -> tz'
+      | Some tz -> tz in
+    let tm = {
+      Unix.tm_sec = s;
+      tm_min = m;
+      tm_hour = h;
+      tm_mday = day;
+      tm_mon = (Month.to_int month - 1);
+      tm_year = year - 1900;
+      tm_wday = 0;
+      tm_yday = 0;
+      tm_isdst = false;
+    } in
+    let tf,_ = Unix.mktime tm in
+    let t = int_of_float tf in
+    let offset = get_dst_timezone t - tz in
+    offset + t
+end
+
+module Unix = Make(UnixImplem)(Duration)

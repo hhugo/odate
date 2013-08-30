@@ -6,7 +6,7 @@
 
 %start main             /* the entry point */
 
-%type < int -> int -> string > main
+%type < Duration_private.O.t -> Duration_private.O.t -> string > main
 
 
 %%
@@ -21,7 +21,7 @@ expr(VD):
   | OPEN;dir=DIRECTIVE;CLOSE
     { (fun d _v ->
       let _,v = Duration_private.apply_directive dir d in
-      string_of_int v) }
+      Duration_private.O.to_string v) }
   | OPEN;PERCENT;check=simple_condition;SEMICOLON ; x=exprs(VD); CLOSE
     { Duration_private.check_condition_simple check x }
   | OPEN;DASH;cmp=condition;i=INT;SEMICOLON;x=exprs(VD); y=option(else_expr(VD));CLOSE

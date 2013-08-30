@@ -18,27 +18,10 @@ Library "time"
   Install: true
   Path: src
   Modules: Date, Duration
-  BuildDepends: lwt
-
-Library "time-unix"
-  FindlibName: unix
-  FindlibParent: time
-  Install: true
-  Path: src/unix
-  Modules: Date_unix, Duration_unix
-  BuildDepends: time,lwt.unix
-
-Library "time-js"
-  FindlibName: js
-  FindlibParent: time
-  Install: true
-  Path: src/js
-  CompiledObject: byte
-  Modules: Date_js, Duration_js
-  BuildDepends: time,js_of_ocaml,js_of_ocaml.syntax
+  InternalModules: Date_lexer,Duration_lexer,Duration_parser,Duration_private
 
 Executable test_unix
   Path: test
   CompiledObject: best
   MainIs: test.ml
-  BuildDepends: time.unix
+  BuildDepends: time, unix, lwt, lwt.unix, should

@@ -178,3 +178,4 @@ module type S = sig
 end
 
 module Make (I : Implem) (D : Duration.S) : S with type t = I.t and type d = D.t
+module Unix : S with type d = Duration.t

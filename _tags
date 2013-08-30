@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: a891d03e93aebda21b99592249cece3c)
+# DO NOT EDIT (digest: 304259b3e8cc083e43e05bd35b52b89a)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -15,27 +15,17 @@
 "_darcs": not_hygienic
 # Library time
 "src/time.cmxs": use_time
-<src/*.ml{,i}>: pkg_lwt
-# Library time-unix
-"src/unix/time-unix.cmxs": use_time-unix
-<src/unix/*.ml{,i}>: use_time
-<src/unix/*.ml{,i}>: pkg_lwt.unix
-<src/unix/*.ml{,i}>: pkg_lwt
-# Library time-js
-"src/js/time-js.cmxs": use_time-js
-<src/js/*.ml{,i}>: use_time
-<src/js/*.ml{,i}>: pkg_js_of_ocaml
-<src/js/*.ml{,i}>: pkg_js_of_ocaml.syntax
-<src/js/*.ml{,i}>: pkg_lwt
 # Executable test_unix
-<test/test.{native,byte}>: use_time-unix
 <test/test.{native,byte}>: use_time
-<test/test.{native,byte}>: pkg_lwt.unix
+<test/test.{native,byte}>: pkg_unix
 <test/test.{native,byte}>: pkg_lwt
-<test/*.ml{,i}>: use_time-unix
+<test/test.{native,byte}>: pkg_lwt.unix
+<test/test.{native,byte}>: pkg_should
 <test/*.ml{,i}>: use_time
-<test/*.ml{,i}>: pkg_lwt.unix
+<test/*.ml{,i}>: pkg_unix
 <test/*.ml{,i}>: pkg_lwt
+<test/*.ml{,i}>: pkg_lwt.unix
+<test/*.ml{,i}>: pkg_should
 # OASIS_STOP
 true:use_menhir
 <src/js/*.ml{,i}>: syntax_camlp4o
