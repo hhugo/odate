@@ -2,7 +2,7 @@ open Should
 
 module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = struct
 
-  let format = "%a %b %d %T %z %Y"
+  let format = "%a %b %d %T %:::z %Y"
   let parseR = match Date.From.generate_parser format with
     | Some p -> p
     | None -> failwith "could not generate parser"
@@ -24,7 +24,7 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
     string s3 $hould # contain ("just now")
 
   let test2 =
-    let d_string = "Wed May 29 20:20:23 +00:00 2013" in
+    let d_string = "Wed May 29 20:20:23 +00 2013" in
     let d = Date.From.string parseR d_string in
     let s = Date.To.string printer d in
     s $hould # equal(d_string)
@@ -33,7 +33,8 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
     let s = Date.now () in
     let s''' = Date.To.string printer s in
     print_endline s''';
-    let s = Date.beginning_of_the_month s in
+    let s = Date.advance_by_days s (-2) in
+    let s__ = Date.beginning_of_the_month s in
     for i = 0 to 40 do
       let s' = Date.advance_by_months s i in
       let s'' = s' in
