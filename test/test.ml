@@ -1,4 +1,5 @@
 open Should
+module T = Date
 
 module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = struct
 
@@ -39,9 +40,9 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
       let s' = Date.advance_by_months s i in
       let s'' = s' in
       let s'' = Date.end_of_the_month s' in
-      let s''' = Date.To.string ~tz:(Date.get_dst_timezone s'') printer s'' in
+      let s''' = Date.To.string ~tz:T.Local printer s'' in
       print_endline s'''
     done
 end
 
-module T = Make(Duration)(Date.Unix)
+module USELESS = Make(Duration)(Date.Unix)

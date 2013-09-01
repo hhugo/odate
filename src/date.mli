@@ -23,7 +23,12 @@ type month =
 
 type year = int
 type day = int
-type tz = int
+type tz_internal = int
+type tz =
+  | UTC
+  | Local
+  | Plus of tz_internal
+
 type human_readable = {
   s : int;
   m : int;
@@ -46,8 +51,8 @@ module type Implem = sig
   val from_human : ?tz:tz -> human_readable -> t
   val now : unit -> t
   val now_milliseconds : unit -> float
-  val get_std_timezone : unit -> tz
-  val get_dst_timezone : t -> tz
+  val get_std_timezone : unit -> tz_internal
+  val get_dst_timezone : t -> tz_internal
   val add : t -> int -> t
   val from_seconds : int -> t
   val to_seconds : t -> int
@@ -80,21 +85,21 @@ end
 module type S = sig
   type t
   type d
-  val beginning_of_the_day : t -> t
-  val beginning_of_the_month : t -> t
-  val beginning_of_the_week : t -> t
+  val beginning_of_the_day : ?tz:tz -> t -> t
+  val beginning_of_the_month : ?tz:tz -> t -> t
+  val beginning_of_the_week : ?tz:tz -> t -> t
 
-  val end_of_the_day : t -> t
-  val end_of_the_month : t -> t
-  val end_of_the_week : t -> t
+  val end_of_the_day : ?tz:tz -> t -> t
+  val end_of_the_month : ?tz:tz -> t -> t
+  val end_of_the_week : ?tz:tz -> t -> t
   val gmt : tz
   val compare : t -> t -> int
   val empty : human_readable
   val some_if_valid : t -> t option
   val now : unit -> t
   val now_milliseconds : unit -> float
-  val get_std_timezone : unit -> tz
-  val get_dst_timezone : t -> tz
+  val get_std_timezone : unit -> tz_internal
+  val get_dst_timezone : t -> tz_internal
 
   val epoch : t
   val make : ?tz:tz -> ?s:int -> ?m:int -> ?h:int -> day:int -> month:month -> year:int -> unit -> t
@@ -107,7 +112,7 @@ module type S = sig
   val advance_by_years : t -> int -> t
   val convert_with_tz : tz -> tz -> t -> t
   val advance_by_weeks : t -> int -> t
-  val move_to_weekday : t -> forward:bool -> weekday -> t
+  val move_to_weekday : ?tz:tz -> t -> forward:bool -> weekday -> t
   val calendar_advance : t -> Duration.human_readable -> t
   val between : t -> t -> d
   val in_between : t -> t -> t
@@ -117,15 +122,15 @@ module type S = sig
   val is_before : t -> t -> bool
   val is_epoch : t -> bool
   val get_age : t -> int
-  val get_weekday : t -> weekday
-  val get_day : t -> int
-  val get_month : t -> month
-  val get_year : t -> year
-  val get_first_week : year -> t
-  val get_week_number : t -> int
-  val get_min : t -> int
-  val get_hour : t -> int
-  val get_sec : t -> int
+  val get_weekday : ?tz:tz -> t -> weekday
+  val get_day : ?tz:tz -> t -> int
+  val get_month : ?tz:tz -> t -> month
+  val get_year : ?tz:tz -> t -> year
+  val get_first_week : ?tz:tz -> year -> t
+  val get_week_number : ?tz:tz -> t -> int
+  val get_min : ?tz:tz -> t -> int
+  val get_hour : ?tz:tz -> t -> int
+  val get_sec : ?tz:tz -> t -> int
 
   module Format : sig
     val default : string

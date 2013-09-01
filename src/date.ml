@@ -23,7 +23,11 @@ type month =
 
 type year = int
 type day = int
-type tz = int
+type tz_internal = int
+type tz =
+  | UTC
+  | Local
+  | Plus of tz_internal
 type human_readable = {
   s : int;
   m : int;
@@ -52,8 +56,8 @@ module type Implem = sig
   val from_human : ?tz:tz -> human_readable -> t
   val now : unit -> t
   val now_milliseconds : unit -> float
-  val get_std_timezone : unit -> tz
-  val get_dst_timezone : t -> tz
+  val get_std_timezone : unit -> tz_internal
+  val get_dst_timezone : t -> tz_internal
   val add : t -> int -> t
   val from_seconds : int -> t
   val to_seconds : t -> int
@@ -62,21 +66,21 @@ end
 module type S = sig
   type t
   type d
-  val beginning_of_the_day : t -> t
-  val beginning_of_the_month : t -> t
-  val beginning_of_the_week : t -> t
+  val beginning_of_the_day : ?tz:tz -> t -> t
+  val beginning_of_the_month : ?tz:tz -> t -> t
+  val beginning_of_the_week : ?tz:tz -> t -> t
 
-  val end_of_the_day : t -> t
-  val end_of_the_month : t -> t
-  val end_of_the_week : t -> t
+  val end_of_the_day : ?tz:tz -> t -> t
+  val end_of_the_month : ?tz:tz -> t -> t
+  val end_of_the_week : ?tz:tz -> t -> t
   val gmt : tz
   val compare : t -> t -> int
   val empty : human_readable
   val some_if_valid : t -> t option
   val now : unit -> t
   val now_milliseconds : unit -> float
-  val get_std_timezone : unit -> tz
-  val get_dst_timezone : t -> tz
+  val get_std_timezone : unit -> tz_internal
+  val get_dst_timezone : t -> tz_internal
 
   val epoch : t
   val make : ?tz:tz -> ?s:int -> ?m:int -> ?h:int -> day:int -> month:month -> year:int -> unit -> t
@@ -89,7 +93,7 @@ module type S = sig
   val advance_by_years : t -> int -> t
   val convert_with_tz : tz -> tz -> t -> t
   val advance_by_weeks : t -> int -> t
-  val move_to_weekday : t -> forward:bool -> weekday -> t
+  val move_to_weekday : ?tz:tz -> t -> forward:bool -> weekday -> t
   val calendar_advance : t -> Duration.human_readable -> t
   val between : t -> t -> d
   val in_between : t -> t -> t
@@ -99,15 +103,15 @@ module type S = sig
   val is_before : t -> t -> bool
   val is_epoch : t -> bool
   val get_age : t -> int
-  val get_weekday : t -> weekday
-  val get_day : t -> int
-  val get_month : t -> month
-  val get_year : t -> year
-  val get_first_week : year -> t
-  val get_week_number : t -> int
-  val get_min : t -> int
-  val get_hour : t -> int
-  val get_sec : t -> int
+  val get_weekday : ?tz:tz -> t -> weekday
+  val get_day : ?tz:tz -> t -> int
+  val get_month : ?tz:tz -> t -> month
+  val get_year : ?tz:tz -> t -> year
+  val get_first_week : ?tz:tz -> year -> t
+  val get_week_number : ?tz:tz -> t -> int
+  val get_min : ?tz:tz -> t -> int
+  val get_hour : ?tz:tz -> t -> int
+  val get_sec : ?tz:tz -> t -> int
   module Format : sig
     val default : string
     val debug : string
@@ -294,18 +298,17 @@ end
 
 module Make(Implem : Implem)(D : Duration.S) = struct
   include Implem
-  module D = D
   type d = D.t
-  let gmt = 0
+  let gmt = UTC
   let now () = Implem.now ()
-  let empty = {s=0;m=0;h=0;day=0;wday=`Monday;month=`January;year=0;tz=0}
+  let empty = {s=0;m=0;h=0;day=0;wday=`Monday;month=`January;year=0;tz=UTC}
   let epoch = Implem.from_seconds 0
   let some_if_valid t =
     if epoch = t
     then None
     else Some t
   let make ?tz ?(s=0) ?(m=0) ?(h=0) ~day ~month ~year () =
-    Implem.from_human ?tz {s;m;h;day;year;month;wday=`Monday;tz=0}
+    Implem.from_human ?tz {s;m;h;day;year;month;wday=`Monday;tz=UTC}
   let move t time = Implem.add t (D.To.s time)
 
   let abbreviations =
@@ -318,6 +321,13 @@ module Make(Implem : Implem)(D : Duration.S) = struct
       ('R', "%H:%M");
       ('T', "%H:%M:%S");
     ]
+
+  module TimeZone = struct
+      let s : t -> tz -> int = fun t -> function
+        | UTC -> 0
+        | Plus n -> n
+        | Local -> get_dst_timezone t
+  end
 
   module From = struct
 
@@ -476,7 +486,7 @@ module Make(Implem : Implem)(D : Duration.S) = struct
       ]
 
     let parse_timezone =
-      let gmt = parse_constant_i "gmt" >>== (fun () -> 0) in
+      let gmt = parse_constant_i "gmt" >>== (fun () -> UTC) in
       let p2 = parse_num_size 2 in
       let other ptr =
         let s = parse_sign ptr in
@@ -489,7 +499,9 @@ module Make(Implem : Implem)(D : Duration.S) = struct
             let _ = parse_option (parse_single_char ':') ptr in
             let _ = parse_option p2 ptr in
             mm in
-        s 0 ((hh*60) + mm)
+        match s 0 ((hh*60) + mm) with
+          | 0 -> UTC
+          | n -> Plus n
 
       in parse_sum [other;gmt]
 
@@ -629,10 +641,11 @@ module Make(Implem : Implem)(D : Duration.S) = struct
           ('y', false, (fun (_, d) -> pad(d.year mod 100, `Pad '0', '0', 2)));
           ('Y', true,  (fun (p, d) -> pad(d.year , p, '_', 4)));
           ('z', true,  (fun (p, d) ->
+            let tz = TimeZone.s (From.human d) d.tz in
              let sign,tz =
-               if d.tz < 0
-               then "-", - d.tz
-               else "+", d.tz in
+               if tz < 0
+               then "-", - tz
+               else "+", tz in
              let min = (tz / 60) in
              let sec = tz mod 60 in
              let hour = pad(min / 60, `Pad '0', '0', 2) in
@@ -696,15 +709,15 @@ module Make(Implem : Implem)(D : Duration.S) = struct
     let d = D.To.s (between t1 t2) / 2 in
     Implem.add t1 d
 
-  let get_year t = (To.human t).year
-  let get_month t = (To.human t).month
-  let get_day t = (To.human t).day
-  let get_weekday t = (To.human t).wday
-  let get_sec t = (To.human t).s
-  let get_min t = (To.human t).m
-  let get_hour t = (To.human t).h
-  let get_std_timezone () : tz = Implem.get_std_timezone ()
-  let get_dst_timezone dst : tz = Implem.get_dst_timezone dst
+  let get_year ?tz t = (To.human ?tz t).year
+  let get_month ?tz t = (To.human ?tz t).month
+  let get_day ?tz t = (To.human ?tz t).day
+  let get_weekday ?tz t = (To.human ?tz t).wday
+  let get_sec ?tz t = (To.human ?tz t).s
+  let get_min ?tz t = (To.human ?tz t).m
+  let get_hour ?tz t = (To.human ?tz t).h
+  let get_std_timezone () : tz_internal = Implem.get_std_timezone ()
+  let get_dst_timezone dst : tz_internal = Implem.get_dst_timezone dst
   let mod_normalized a n =
     let a = a mod n in
     if a < 0 then a + n else a
@@ -751,64 +764,65 @@ module Make(Implem : Implem)(D : Duration.S) = struct
     calendar_advance t {D.zero_human with Duration.year}
 
   let convert_with_tz f_tz t_tz t =
+    let f_tz = TimeZone.s t f_tz in
+    let t_tz = TimeZone.s t t_tz in
     let dtz = t_tz - f_tz in
-    let h = To.human t in
-    let tz = h.tz + dtz in
-    From.human {h with tz}
+    let h = To.human ~tz:UTC t in
+    From.human {h with tz = Plus dtz}
 
-  let move_to_weekday t ~forward wd =
+  let move_to_weekday ?tz t ~forward wd =
     let dir = if forward then 1 else -1 in
     let rec shift t =
-      let d = To.human t in
+      let d = To.human ?tz t in
       if d.wday = wd
       then t
       else
         shift(advance_by_days t dir)
     in shift t
 
-  let get_first_week year =
-    let t = make ~day:1 ~month:`January ~year ()  in
-    let t = move_to_weekday t ~forward:true `Thursday in
-    let t = move_to_weekday t ~forward:false `Monday in
+  let get_first_week ?tz year =
+    let t = make ?tz ~day:1 ~month:`January ~year ()  in
+    let t = move_to_weekday ?tz t ~forward:true `Thursday in
+    let t = move_to_weekday ?tz t ~forward:false `Monday in
     t
 
-  let beginning_of_the_day date =
-    let hum = to_human date in
+  let beginning_of_the_day ?tz date =
+    let hum = to_human ?tz date in
     From.human {hum with h=0;m=0;s=0}
 
-  let end_of_the_day date =
-    let hum = to_human date in
+  let end_of_the_day ?tz date =
+    let hum = to_human ?tz date in
     From.human {hum with h=23;m=59;s=60}
 
-  let beginning_of_the_week date =
+  let beginning_of_the_week ?tz date =
     (* let wd = Date.get_weekday date in *)
     (* match wd with *)
     (*   | `Sunday -> Date.move_to_weekday date ~forward:true `Monday *)
     (*   | _ ->  *)
-    move_to_weekday date ~forward:false `Monday
+    move_to_weekday ?tz date ~forward:false `Monday
 
-  let end_of_the_week date =
-    move_to_weekday date ~forward:true `Sunday
+  let end_of_the_week ?tz date =
+    move_to_weekday ?tz date ~forward:true `Sunday
 
-  let end_of_the_month date =
+  let end_of_the_month ?tz date =
     let rec loop hum date =
       let day =
         if hum.day < 28
         then 28 - hum.day
         else 1 in
       let date' = advance_by_days date day in
-      let hum' = To.human date' in
+      let hum' = To.human ?tz date' in
       if hum.month = hum'.month
       then loop hum' date'
       else date
-    in loop (To.human date) date
+    in loop (To.human ?tz date) date
 
-  let beginning_of_the_month date =
-    let hum = To.human date in
-    From.human {hum with day=1}
+  let beginning_of_the_month ?tz date =
+    let hum = To.human ?tz date in
+    From.human ?tz {hum with day=1}
 
-  let get_week_number t =
-    let y = get_year t in
+  let get_week_number ?tz t =
+    let y = get_year ?tz t in
     let t1 = get_first_week y in
     let d = between t1 t in
     let d = D.To.day d in
@@ -821,7 +835,7 @@ module Make(Implem : Implem)(D : Duration.S) = struct
 
   let get_age d =
     let now = now () in
-    let now = convert_with_tz (get_dst_timezone now) gmt now in
+    let now = convert_with_tz Local gmt now in
     let hn = To.human now in
     let h = To.human d in
     let h' = {h with year = hn.year} in
@@ -903,9 +917,12 @@ module UnixImplem : Implem = struct
 
   let get_std_timezone () = timezone_s ()
   let get_dst_timezone dst = timezone_s ~dst ()
-  let to_human ?(tz=0) t =
+  let to_human ?(tz=UTC) t =
     let open Unix in
-    let tm = gmtime (float_of_int (t +  tz)) in
+    let tm = match tz with
+      | UTC -> gmtime (float_of_int t)
+      | Local -> localtime (float_of_int t)
+      | Plus tz' -> gmtime (float_of_int (t +  tz')) in
     {
       s = tm.tm_sec;	(*	Seconds 0..60	*)
   	  m = tm.tm_min;	(*	Minutes 0..59	*)
@@ -935,7 +952,11 @@ module UnixImplem : Implem = struct
     } in
     let tf,_ = Unix.mktime tm in
     let t = int_of_float tf in
-    let offset = get_dst_timezone t - tz in
+    let local_tz = get_dst_timezone t in
+    let offset = match tz with
+      | Local -> 0
+      | UTC -> local_tz
+      | Plus n -> local_tz - n in
     offset + t
 end
 
