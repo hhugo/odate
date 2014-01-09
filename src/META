@@ -1,10 +1,10 @@
 # OASIS_START
-# DO NOT EDIT (digest: dd5bcdb40351cadc70fb294f05dbd98b)
+# DO NOT EDIT (digest: a3a934fb1cf5ca022780b8d0a01845e2)
 version = "1.0.0"
 description = "Date & Duration Library"
-archive(byte) = "time.cma"
-archive(byte, plugin) = "time.cma"
-archive(native) = "time.cmxa"
-archive(native, plugin) = "time.cmxs"
-exists_if = "time.cma"
+archive(byte) = "odate.cma"
+archive(byte, plugin) = "odate.cma"
+archive(native) = "odate.cmxa"
+archive(native, plugin) = "odate.cmxs"
+exists_if = "odate.cma"
 # OASIS_STOP

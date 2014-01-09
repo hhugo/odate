@@ -5,8 +5,10 @@ _build
 *.cmx
 *.cmxs
 *.cmxa
+*.mllib
 *#*
-setup.data
-setup.log
+setup.*
 *.native
 *.byte
+*.docdir
+*.ocdocl

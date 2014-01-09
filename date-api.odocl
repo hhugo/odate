@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 991d1498f674db527d0bcffb442fde75)
-src/Date
-src/Duration
+# DO NOT EDIT (digest: f11cc73eea0f2e3d61e102069bc34f80)
+src/Odate
+src/Oduration
 # OASIS_STOP

@@ -54,8 +54,8 @@ module type Implem = sig
   val get_std_timezone : unit -> tz_internal
   val get_dst_timezone : t -> tz_internal
   val add : t -> int -> t
-  val from_seconds : int -> t
-  val to_seconds : t -> int
+  val from_seconds : float -> t
+  val to_seconds : t -> float
 end
 
 module Hour : sig
@@ -113,7 +113,7 @@ module type S = sig
   val convert_with_tz : tz -> tz -> t -> t
   val advance_by_weeks : t -> int -> t
   val move_to_weekday : ?tz:tz -> t -> forward:bool -> weekday -> t
-  val calendar_advance : t -> Duration.human_readable -> t
+  val calendar_advance : t -> Oduration.human_readable -> t
   val between : t -> t -> d
   val in_between : t -> t -> t
   val max : t -> t -> t
@@ -182,5 +182,5 @@ module type S = sig
 
 end
 
-module Make (I : Implem) (D : Duration.S) : S with type t = I.t and type d = D.t
-module Unix : S with type d = Duration.t
+module Make (I : Implem) : S with type t = I.t
+module Unix : S with type d = Oduration.t

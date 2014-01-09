@@ -59,8 +59,8 @@ module type Implem = sig
   val get_std_timezone : unit -> tz_internal
   val get_dst_timezone : t -> tz_internal
   val add : t -> int -> t
-  val from_seconds : int -> t
-  val to_seconds : t -> int
+  val from_seconds : float -> t
+  val to_seconds : t -> float
 end
 
 module type S = sig
@@ -94,7 +94,7 @@ module type S = sig
   val convert_with_tz : tz -> tz -> t -> t
   val advance_by_weeks : t -> int -> t
   val move_to_weekday : ?tz:tz -> t -> forward:bool -> weekday -> t
-  val calendar_advance : t -> Duration.human_readable -> t
+  val calendar_advance : t -> Oduration.human_readable -> t
   val between : t -> t -> d
   val in_between : t -> t -> t
   val max : t -> t -> t
@@ -296,13 +296,15 @@ module Month = struct
 
 end
 
-module Make(Implem : Implem)(D : Duration.S) = struct
+module Make(Implem : Implem) = struct
   include Implem
+  module D = Oduration
   type d = D.t
+
   let gmt = UTC
   let now () = Implem.now ()
   let empty = {s=0;m=0;h=0;day=0;wday=`Monday;month=`January;year=0;tz=UTC}
-  let epoch = Implem.from_seconds 0
+  let epoch = Implem.from_seconds 0.
   let some_if_valid t =
     if epoch = t
     then None
@@ -505,9 +507,9 @@ module Make(Implem : Implem)(D : Duration.S) = struct
 
       in parse_sum [other;gmt]
 
-    let seconds x = Implem.from_seconds x
+    let seconds x = Implem.from_seconds (float_of_int x)
 
-    let seconds_float x = Implem.from_seconds (int_of_float x)
+    let seconds_float x = Implem.from_seconds x
 
     let parse_pm =
       parse_sum [
@@ -601,8 +603,8 @@ module Make(Implem : Implem)(D : Duration.S) = struct
 
   end
   module To = struct
-    let seconds t = Implem.to_seconds t
-    let seconds_float t = float_of_int (Implem.to_seconds t)
+    let seconds t = int_of_float (Implem.to_seconds t)
+    let seconds_float t = Implem.to_seconds t
     let fill s size c =
       let n = size - (String.length s) in
       if n>0
@@ -704,7 +706,7 @@ module Make(Implem : Implem)(D : Duration.S) = struct
       format h
   end
 
-  let between t1 t2 = D.(-) (D.From.s (Implem.to_seconds t2)) (D.From.s (Implem.to_seconds t1))
+  let between t1 t2 = D.(-) (D.From.s_float (Implem.to_seconds t2)) (D.From.s_float (Implem.to_seconds t1))
   let in_between t1 t2 =
     let d = D.To.s (between t1 t2) / 2 in
     Implem.add t1 d
@@ -722,7 +724,7 @@ module Make(Implem : Implem)(D : Duration.S) = struct
     let a = a mod n in
     if a < 0 then a + n else a
 
-  let calendar_advance t {Duration.forward;h;m;s;day;month;year} =
+  let calendar_advance t {D.forward;h;m;s;day;month;year} =
     let human = To.human t in
     let add = if forward then (fun a x -> a + x) else (fun a x -> a - x) in
     let human = {human with
@@ -752,16 +754,16 @@ module Make(Implem : Implem)(D : Duration.S) = struct
     move t (D.From.h h)
 
   let advance_by_days t day =
-    calendar_advance t {D.zero_human with Duration.day}
+    calendar_advance t {D.zero_human with D.day}
 
   let advance_by_weeks t n =
-    calendar_advance t {D.zero_human with Duration.day = 7 * n }
+    calendar_advance t {D.zero_human with D.day = 7 * n }
 
   let advance_by_months t month =
-    calendar_advance t {D.zero_human with Duration.month}
+    calendar_advance t {D.zero_human with D.month}
 
   let advance_by_years t year =
-    calendar_advance t {D.zero_human with Duration.year}
+    calendar_advance t {D.zero_human with D.year}
 
   let convert_with_tz f_tz t_tz t =
     let f_tz = TimeZone.s t f_tz in
@@ -891,38 +893,38 @@ end
 
 
 module UnixImplem : Implem = struct
-  type t = int
+  type t = float
 
   let compare = Pervasives.compare
 
-  let add = (+)
+  let add f i = f +. (float_of_int i)
   let from_seconds x = x
   let to_seconds x = x
 
-  let one_hour = 3600
+  let one_hour = 3600.
 
   let timezone_s ?dst () =
     let open Unix in
     let t,dst = match dst with
       | None -> time (),false
-      | Some t -> float_of_int t,true in
+      | Some t -> t,true in
     let x = gmtime t in
     let y = localtime t in
     let x',_ = mktime x in
     let y',{tm_isdst} = mktime y in
-    let i = int_of_float (y' -. x') in
+    let i = y' -. x' in
     if tm_isdst && not dst
-    then i - one_hour
-    else i
+    then int_of_float (i -. one_hour)
+    else int_of_float i
 
   let get_std_timezone () = timezone_s ()
   let get_dst_timezone dst = timezone_s ~dst ()
   let to_human ?(tz=UTC) t =
     let open Unix in
     let tm = match tz with
-      | UTC -> gmtime (float_of_int t)
-      | Local -> localtime (float_of_int t)
-      | Plus tz' -> gmtime (float_of_int (t +  tz')) in
+      | UTC -> gmtime t
+      | Local -> localtime t
+      | Plus tz' -> gmtime (t +.  (float_of_int tz')) in
     {
       s = tm.tm_sec;	(*	Seconds 0..60	*)
   	  m = tm.tm_min;	(*	Minutes 0..59	*)
@@ -933,7 +935,7 @@ module UnixImplem : Implem = struct
   	  wday = Weekday.of_int (tm.tm_wday);	(*	Day of week (Sunday is 0)	*)
       tz;
     }
-  let now () = int_of_float (Unix.time ())
+  let now () = Unix.time ()
   let now_milliseconds () = Unix.gettimeofday () *. 1000.
   let from_human ?tz {s;m;h;day;month;year;tz=tz'} =
     let tz = match tz with
@@ -951,13 +953,13 @@ module UnixImplem : Implem = struct
       tm_isdst = false;
     } in
     let tf,_ = Unix.mktime tm in
-    let t = int_of_float tf in
-    let local_tz = get_dst_timezone t in
-    let offset = match tz with
+    let t = tf in
+    let local_tz : tz_internal = get_dst_timezone t in
+    let offset : int = match tz with
       | Local -> 0
       | UTC -> local_tz
       | Plus n -> local_tz - n in
-    offset + t
+    t +. (float_of_int offset)
 end
 
-module Unix = Make(UnixImplem)(Duration)
+module Unix = Make(UnixImplem)

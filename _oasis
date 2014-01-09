@@ -1,37 +1,33 @@
-# +-------------------------------------------------------------------+
-# | Package parameters                                                |
-# +-------------------------------------------------------------------+
-
-OASISFormat: 0.3
+OASISFormat: 0.4
 OCamlVersion: >= 3.12
-Name: time
+Name: odate
 Version: 1.0.0
-LicenseFile: COPYING
 License: LGPL-2.1 with OCaml linking exception
 Authors: Hugo Heuzard
+Maintainers: Hugo Heuzard <hugo.heuzard@gmail.com>
 BuildTools: ocamlbuild
-Plugins: DevFiles (0.3), META (0.3)
-
+Plugins: META (0.4)
+Homepage: https://github.com/hhugo/odate
 Synopsis: Date & Duration Library
 
-Library "time"
+Library "odate"
   Install: true
   Path: src
-  Modules: Date, Duration
+  Modules: Odate, Oduration
   InternalModules: Date_lexer,Duration_lexer,Duration_parser,Duration_private
 
 Document "date-api"
   Title: API reference for Lwt
-  Type: ocamlbuild (0.3)
+  Type: ocamlbuild (0.4)
   Install: true
-  InstallDir: $htmldir/api
-  BuildTools: ocamldoc
+  BuildTools+: ocamldoc
   XOCamlbuildPath: ./
-  XOCamlbuildLibraries:
-    time
+  XOCamlbuildLibraries: odate
 
 Executable test_unix
   Path: test
+  Install: false
+  Build: false
   CompiledObject: best
   MainIs: test.ml
-  BuildDepends: time, unix, lwt, lwt.unix, should
+  BuildDepends: odate, unix, lwt, lwt.unix, should

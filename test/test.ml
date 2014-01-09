@@ -35,11 +35,10 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
     let s''' = Date.To.string printer s in
     print_endline s''';
     let s = Date.advance_by_days s (-2) in
-    let s__ = Date.beginning_of_the_month s in
-    for i = 0 to 40 do
+    for i = 0 to 2 do
       let s' = Date.advance_by_months s i in
-      let s'' = s' in
-      let s'' = Date.end_of_the_month s' in
+      (* let s'' = s' in *)
+      let s'' = Date.end_of_the_month ~tz:T.Local s' in
       let s''' = Date.To.string ~tz:T.Local printer s'' in
       print_endline s'''
     done

@@ -1,7 +1,7 @@
 # OASIS_START
-# DO NOT EDIT (digest: 304259b3e8cc083e43e05bd35b52b89a)
-# Ignore VCS directories, you can use the same kind of rule outside 
-# OASIS_START/STOP if you want to exclude directories that contains 
+# DO NOT EDIT (digest: 3cedc1f1dbcf85ec8dfd1a09625728c5)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
 <**/.svn>: -traverse
 <**/.svn>: not_hygienic
@@ -13,15 +13,15 @@
 ".git": not_hygienic
 "_darcs": -traverse
 "_darcs": not_hygienic
-# Library time
-"src/time.cmxs": use_time
+# Library odate
+"src/odate.cmxs": use_odate
 # Executable test_unix
-<test/test.{native,byte}>: use_time
+<test/test.{native,byte}>: use_odate
 <test/test.{native,byte}>: pkg_unix
 <test/test.{native,byte}>: pkg_lwt
 <test/test.{native,byte}>: pkg_lwt.unix
 <test/test.{native,byte}>: pkg_should
-<test/*.ml{,i}>: use_time
+<test/*.ml{,i}>: use_odate
 <test/*.ml{,i}>: pkg_unix
 <test/*.ml{,i}>: pkg_lwt
 <test/*.ml{,i}>: pkg_lwt.unix

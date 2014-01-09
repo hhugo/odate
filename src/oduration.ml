@@ -50,7 +50,7 @@ module type S = sig
   end
 end
 
-module Make : S = struct
+module D : S = struct
   include Duration_private
   include O
   let zero_human = {forward=true;ms=0;s=0;m=0;h=0;day=0;month=0;year=0}
@@ -144,4 +144,4 @@ module Make : S = struct
   end
 end
 
-include Make
+include D
