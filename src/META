@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: a3a934fb1cf5ca022780b8d0a01845e2)
-version = "1.0.0"
+# DO NOT EDIT (digest: ee659928d84a07aa1d9d7fceba3eebca)
+version = "0.5"
 description = "Date & Duration Library"
 archive(byte) = "odate.cma"
 archive(byte, plugin) = "odate.cma"

@@ -1,7 +1,7 @@
 OASISFormat: 0.4
 OCamlVersion: >= 3.12
 Name: odate
-Version: 1.0.0
+Version: 0.5
 License: LGPL-2.1 with OCaml linking exception
 Authors: Hugo Heuzard
 Maintainers: Hugo Heuzard <hugo.heuzard@gmail.com>
