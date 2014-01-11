@@ -41,6 +41,7 @@ module type S = sig
   end
   module To : sig
     val s : t -> int
+    val s_float : t -> float
     val m : t -> int
     val h : t -> int
     val day : t -> int

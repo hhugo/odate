@@ -49,6 +49,49 @@ type printer = human_readable -> string
 type format = string
 type parser_ = pointer -> human_readable -> human_readable
 
+module type Clock = sig
+  (** Clock operations.
+      Currently read-only to retrieve the time in various formats. *)
+  type tm =
+    { tm_sec : int;               (** Seconds 0..60 *)
+      tm_min : int;               (** Minutes 0..59 *)
+      tm_hour : int;              (** Hours 0..23 *)
+      tm_mday : int;              (** Day of month 1..31 *)
+      tm_mon : int;               (** Month of year 0..11 *)
+      tm_year : int;              (** Year - 1900 *)
+      tm_wday : int;              (** Day of week (Sunday is 0) *)
+      tm_yday : int;              (** Day of year 0..365 *)
+      tm_isdst : bool;            (** Daylight time savings in effect *)
+    }
+  (** The type representing wallclock time and calendar date. *)
+
+  val time : unit -> float
+  (** Return the current time since 00:00:00 GMT, Jan. 1, 1970, in
+      seconds. *)
+
+  val gettimeofday : unit -> float
+  (** Same as time, but with resolution better than 1 second. *)
+
+  val gmtime : float -> tm
+  (** Convert a time in seconds, as returned by {!time}, into a
+      date and a time. Assumes UTC (Coordinated Universal Time), also
+      known as GMT. *)
+  val localtime : float -> tm
+  (** Convert a time in seconds, as returned by {!Unix.time}, into a
+      date and a time. Assumes the local time zone. *)
+
+  val mktime : tm -> float * tm
+  (** Convert a date and time, specified by the tm argument, into a time
+      in seconds, as returned by Unix.time.
+      The tm_isdst, tm_wday and tm_yday fields of tm are ignored.
+      Also return a normalized copy of the given tm record, with the
+      tm_wday, tm_yday, and tm_isdst fields recomputed from the other
+      fields, and the other fields normalized (so that, e.g., 40 October
+      is changed into 9 November). The tm argument is interpreted in
+      the local time zone. *)
+
+end
+
 module type Implem = sig
   type t
   val compare : t -> t -> int
@@ -58,14 +101,14 @@ module type Implem = sig
   val now_milliseconds : unit -> float
   val get_std_timezone : unit -> tz_internal
   val get_dst_timezone : t -> tz_internal
-  val add : t -> int -> t
+  val add : t -> float -> t
   val from_seconds : float -> t
   val to_seconds : t -> float
 end
 
 module type S = sig
   type t
-  type d
+  type d = ODuration.t
   val beginning_of_the_day : ?tz:tz -> t -> t
   val beginning_of_the_month : ?tz:tz -> t -> t
   val beginning_of_the_week : ?tz:tz -> t -> t
@@ -94,7 +137,7 @@ module type S = sig
   val convert_with_tz : tz -> tz -> t -> t
   val advance_by_weeks : t -> int -> t
   val move_to_weekday : ?tz:tz -> t -> forward:bool -> weekday -> t
-  val calendar_advance : t -> Oduration.human_readable -> t
+  val calendar_advance : t -> ODuration.human_readable -> t
   val between : t -> t -> d
   val in_between : t -> t -> t
   val max : t -> t -> t
@@ -298,7 +341,7 @@ end
 
 module Make(Implem : Implem) = struct
   include Implem
-  module D = Oduration
+  module D = ODuration
   type d = D.t
 
   let gmt = UTC
@@ -311,7 +354,7 @@ module Make(Implem : Implem) = struct
     else Some t
   let make ?tz ?(s=0) ?(m=0) ?(h=0) ~day ~month ~year () =
     Implem.from_human ?tz {s;m;h;day;year;month;wday=`Monday;tz=UTC}
-  let move t time = Implem.add t (D.To.s time)
+  let move t time = Implem.add t (D.To.s_float time)
 
   let abbreviations =
     [
@@ -708,7 +751,7 @@ module Make(Implem : Implem) = struct
 
   let between t1 t2 = D.(-) (D.From.s_float (Implem.to_seconds t2)) (D.From.s_float (Implem.to_seconds t1))
   let in_between t1 t2 =
-    let d = D.To.s (between t1 t2) / 2 in
+    let d = D.To.s_float (between t1 t2) /. 2. in
     Implem.add t1 d
 
   let get_year ?tz t = (To.human ?tz t).year
@@ -892,26 +935,25 @@ module Make(Implem : Implem) = struct
 end
 
 
-module UnixImplem : Implem = struct
+module MakeImplem(C : Clock) : Implem = struct
   type t = float
 
   let compare = Pervasives.compare
 
-  let add f i = f +. (float_of_int i)
+  let add f i = f +. i
   let from_seconds x = x
   let to_seconds x = x
 
   let one_hour = 3600.
 
   let timezone_s ?dst () =
-    let open Unix in
     let t,dst = match dst with
-      | None -> time (),false
+      | None -> C.time (),false
       | Some t -> t,true in
-    let x = gmtime t in
-    let y = localtime t in
-    let x',_ = mktime x in
-    let y',{tm_isdst} = mktime y in
+    let x = C.gmtime t in
+    let y = C.localtime t in
+    let x',_ = C.mktime x in
+    let y',{C.tm_isdst} = C.mktime y in
     let i = y' -. x' in
     if tm_isdst && not dst
     then int_of_float (i -. one_hour)
@@ -920,29 +962,28 @@ module UnixImplem : Implem = struct
   let get_std_timezone () = timezone_s ()
   let get_dst_timezone dst = timezone_s ~dst ()
   let to_human ?(tz=UTC) t =
-    let open Unix in
     let tm = match tz with
-      | UTC -> gmtime t
-      | Local -> localtime t
-      | Plus tz' -> gmtime (t +.  (float_of_int tz')) in
+      | UTC -> C.gmtime t
+      | Local -> C.localtime t
+      | Plus tz' -> C.gmtime (t +.  (float_of_int tz')) in
     {
-      s = tm.tm_sec;	(*	Seconds 0..60	*)
-  	  m = tm.tm_min;	(*	Minutes 0..59	*)
-  	  h = tm.tm_hour;	(*	Hours 0..23	*)
-  	  day = tm.tm_mday;	(*	Day of month 1..31	*)
-  	  month = Month.of_int (tm.tm_mon + 1);	(*	Month of year 0..11	*)
-  	  year = tm.tm_year + 1900;	(*	Year - 1900	*)
-  	  wday = Weekday.of_int (tm.tm_wday);	(*	Day of week (Sunday is 0)	*)
+      s = tm.C.tm_sec;	(*	Seconds 0..60	*)
+  	  m = tm.C.tm_min;	(*	Minutes 0..59	*)
+  	  h = tm.C.tm_hour;	(*	Hours 0..23	*)
+  	  day = tm.C.tm_mday;	(*	Day of month 1..31	*)
+  	  month = Month.of_int (tm.C.tm_mon + 1);	(*	Month of year 0..11	*)
+  	  year = tm.C.tm_year + 1900;	(*	Year - 1900	*)
+  	  wday = Weekday.of_int (tm.C.tm_wday);	(*	Day of week (Sunday is 0)	*)
       tz;
     }
-  let now () = Unix.time ()
-  let now_milliseconds () = Unix.gettimeofday () *. 1000.
+  let now () = C.time ()
+  let now_milliseconds () = C.gettimeofday () *. 1000.
   let from_human ?tz {s;m;h;day;month;year;tz=tz'} =
     let tz = match tz with
       | None -> tz'
       | Some tz -> tz in
     let tm = {
-      Unix.tm_sec = s;
+      C.tm_sec = s;
       tm_min = m;
       tm_hour = h;
       tm_mday = day;
@@ -952,7 +993,7 @@ module UnixImplem : Implem = struct
       tm_yday = 0;
       tm_isdst = false;
     } in
-    let tf,_ = Unix.mktime tm in
+    let tf,_ = C.mktime tm in
     let t = tf in
     let local_tz : tz_internal = get_dst_timezone t in
     let offset : int = match tz with
@@ -962,4 +1003,4 @@ module UnixImplem : Implem = struct
     t +. (float_of_int offset)
 end
 
-module Unix = Make(UnixImplem)
+module Unix = Make(MakeImplem(Unix))

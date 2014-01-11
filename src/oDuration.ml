@@ -38,6 +38,7 @@ module type S = sig
   end
   module To : sig
     val s : t -> int
+    val s_float : t -> float
     val m : t -> int
     val h : t -> int
     val day : t -> int
@@ -90,7 +91,7 @@ module D : S = struct
 
   module To = struct
     let ms t = int_of_float (O.to_float t)
-    let s_f t = O.(to_float (t / ms_in_s))
+    let s_float t = O.(to_float (t / ms_in_s))
     let aux divide t = int_of_float (O.to_float t /. O.to_float divide)
     let s = aux ms_in_s
     let m = aux ms_in_min

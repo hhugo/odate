@@ -1,8 +1,7 @@
 open Should
-module T = Date
 
-module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = struct
-
+module Make (Date : ODate.S) = struct
+  module Duration = ODuration
   let format = "%a %b %d %T %:::z %Y"
   let parseR = match Date.From.generate_parser format with
     | Some p -> p
@@ -11,7 +10,7 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
     | Some p -> p
     | None -> failwith "could not generate printer"
 
-  let test1 =
+  let test1 () =
     let a = Date.now () in
     let d1 = Duration.From.ms 9990 in
     let b = Date.now () in
@@ -24,24 +23,31 @@ module Make (Duration : Duration.S) (Date : Date.S with type d = Duration.t) = s
     string s2 $hould # contain ("in 9 seconds");
     string s3 $hould # contain ("just now")
 
-  let test2 =
+  let test2 () =
     let d_string = "Wed May 29 20:20:23 +00 2013" in
     let d = Date.From.string parseR d_string in
     let s = Date.To.string printer d in
     s $hould # equal(d_string)
 
-  let test3 =
+  let test3 () =
     let s = Date.now () in
-    let s''' = Date.To.string printer s in
+    let s''' = Date.To.string ~tz:ODate.Local printer s in
     print_endline s''';
-    let s = Date.advance_by_days s (-2) in
+    (* let s = Date.advance_by_days s (-2) in *)
     for i = 0 to 2 do
       let s' = Date.advance_by_months s i in
       (* let s'' = s' in *)
-      let s'' = Date.end_of_the_month ~tz:T.Local s' in
-      let s''' = Date.To.string ~tz:T.Local printer s'' in
+      let s'' = Date.end_of_the_month ~tz:ODate.Local s' in
+      let s''' = Date.To.string ~tz:ODate.Local printer s'' in
       print_endline s'''
     done
+
+
+  let tests = [test1;test2;test3]
+
+  let _ = List.iter (fun test -> try test () with
+      | exc -> print_endline "test fail") tests
+
 end
 
-module USELESS = Make(Duration)(Date.Unix)
+module USELESS = Make(ODate.Unix)

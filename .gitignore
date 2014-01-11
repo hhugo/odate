@@ -11,4 +11,4 @@ setup.*
 *.native
 *.byte
 *.docdir
-*.ocdocl
+*.odocl

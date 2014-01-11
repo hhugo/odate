@@ -44,6 +44,49 @@ type parser_
 type printer
 type format = string
 
+module type Clock = sig
+  (** Clock operations.
+      Currently read-only to retrieve the time in various formats. *)
+  type tm =
+    { tm_sec : int;               (** Seconds 0..60 *)
+      tm_min : int;               (** Minutes 0..59 *)
+      tm_hour : int;              (** Hours 0..23 *)
+      tm_mday : int;              (** Day of month 1..31 *)
+      tm_mon : int;               (** Month of year 0..11 *)
+      tm_year : int;              (** Year - 1900 *)
+      tm_wday : int;              (** Day of week (Sunday is 0) *)
+      tm_yday : int;              (** Day of year 0..365 *)
+      tm_isdst : bool;            (** Daylight time savings in effect *)
+    }
+  (** The type representing wallclock time and calendar date. *)
+
+  val time : unit -> float
+  (** Return the current time since 00:00:00 GMT, Jan. 1, 1970, in
+      seconds. *)
+
+  val gettimeofday : unit -> float
+  (** Same as time, but with resolution better than 1 second. *)
+
+  val gmtime : float -> tm
+  (** Convert a time in seconds, as returned by {!time}, into a
+      date and a time. Assumes UTC (Coordinated Universal Time), also
+      known as GMT. *)
+  val localtime : float -> tm
+  (** Convert a time in seconds, as returned by {!Unix.time}, into a
+      date and a time. Assumes the local time zone. *)
+
+  val mktime : tm -> float * tm
+  (** Convert a date and time, specified by the tm argument, into a time
+      in seconds, as returned by Unix.time.
+      The tm_isdst, tm_wday and tm_yday fields of tm are ignored.
+      Also return a normalized copy of the given tm record, with the
+      tm_wday, tm_yday, and tm_isdst fields recomputed from the other
+      fields, and the other fields normalized (so that, e.g., 40 October
+      is changed into 9 November). The tm argument is interpreted in
+      the local time zone. *)
+
+end
+
 module type Implem = sig
   type t
   val compare : t -> t -> int
@@ -53,7 +96,7 @@ module type Implem = sig
   val now_milliseconds : unit -> float
   val get_std_timezone : unit -> tz_internal
   val get_dst_timezone : t -> tz_internal
-  val add : t -> int -> t
+  val add : t -> float -> t
   val from_seconds : float -> t
   val to_seconds : t -> float
 end
@@ -84,7 +127,7 @@ end
 
 module type S = sig
   type t
-  type d
+  type d = ODuration.t
   val beginning_of_the_day : ?tz:tz -> t -> t
   val beginning_of_the_month : ?tz:tz -> t -> t
   val beginning_of_the_week : ?tz:tz -> t -> t
@@ -113,7 +156,7 @@ module type S = sig
   val convert_with_tz : tz -> tz -> t -> t
   val advance_by_weeks : t -> int -> t
   val move_to_weekday : ?tz:tz -> t -> forward:bool -> weekday -> t
-  val calendar_advance : t -> Oduration.human_readable -> t
+  val calendar_advance : t -> ODuration.human_readable -> t
   val between : t -> t -> d
   val in_between : t -> t -> t
   val max : t -> t -> t
@@ -181,6 +224,6 @@ module type S = sig
   end
 
 end
-
+module MakeImplem(C : Clock) : Implem
 module Make (I : Implem) : S with type t = I.t
-module Unix : S with type d = Oduration.t
+module Unix : S

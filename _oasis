@@ -6,19 +6,24 @@ License: LGPL-2.1 with OCaml linking exception
 Authors: Hugo Heuzard
 Maintainers: Hugo Heuzard <hugo.heuzard@gmail.com>
 BuildTools: ocamlbuild
-Plugins: META (0.4)
+Plugins: META (0.4), StdFiles (0.4)
 Homepage: https://github.com/hhugo/odate
 Synopsis: Date & Duration Library
+Description:
+  Simple date and duration manipulation.
+  Also implement duration printer based on string format.
+  Already implemented in opalang [http://opalang.org/].
+  For documentation about the format, see : http://doc.opalang.org/value/stdlib.core.date/Duration/try_generate_printer.
 
 Library "odate"
   Install: true
   Path: src
-  Modules: Odate, Oduration
+  Modules: ODate, ODuration
   InternalModules: Date_lexer,Duration_lexer,Duration_parser,Duration_private
 
 Document "date-api"
   Title: API reference for Lwt
-  Type: ocamlbuild (0.4)
+  Type: OCamlbuild (0.4)
   Install: true
   BuildTools+: ocamldoc
   XOCamlbuildPath: ./
