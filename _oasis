@@ -29,10 +29,14 @@ Document "date-api"
   XOCamlbuildPath: ./
   XOCamlbuildLibraries: odate
 
-Executable test_unix
-  Path: test
+Executable "test_unix"
+  Path: ./test
+  Build$: flag(tests)
   Install: false
-  Build: false
   CompiledObject: best
   MainIs: test.ml
   BuildDepends: odate, unix, lwt, lwt.unix, should
+
+Test tests
+  Run$: flag(tests)
+  Command: $test_unix

@@ -1,5 +1,6 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: b5a8bee0881f7939257fc289f5bfb325) *)
+(* DO NOT EDIT (digest: 9cf6f4117c37d5b97cc89fdedea350d5) *)
+
 This is the INSTALL file for the odate distribution.
 
 This package uses OASIS to generate its build system. See section OASIS for
@@ -9,7 +10,8 @@ Dependencies
 ============
 
 In order to compile this package, you will need:
-* ocaml (>= 4.00.0) for all, doc date-api
+
+* ocaml (>= 4.00.0) for all, test tests, doc date-api
 * findlib
 * lwt for executable test_unix
 * should for executable test_unix

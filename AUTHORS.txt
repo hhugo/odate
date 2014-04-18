@@ -1,8 +1,12 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 5d7bb95032809d7a4a22931dc5a684a6) *)
-Authors of odate
-Hugo Heuzard
+(* DO NOT EDIT (digest: 38ac80e45ba7adc9a09e57730f835f4c) *)
 
-Current maintainers of odate
-Hugo Heuzard <hugo.heuzard@gmail.com>
+Authors of odate:
+
+* Hugo Heuzard
+
+Current maintainers of odate:
+
+* Hugo Heuzard <hugo.heuzard@gmail.com>
+
 (* OASIS_STOP *)

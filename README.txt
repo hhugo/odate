@@ -1,17 +1,23 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 7d7fb97cd6142b2445da49fd1081586f) *)
-This is the README file for the odate distribution.
+(* DO NOT EDIT (digest: 1c0cd9833cd8339aa428b9302a8d0a7b) *)
 
-Date & Duration Library
+odate - Date & Duration Library
+===============================
 
 Simple date and duration manipulation. Also implement duration printer based
 on string format. Already implemented in opalang [http://opalang.org/]. For
 documentation about the format, see :
 [http://doc.opalang.org/value/stdlib.core.date/Duration/try_generate_printer].
 
-See the files INSTALL.txt for building and installation instructions. 
+See the file [INSTALL.txt](INSTALL.txt) for building and installation
+instructions.
 
-Home page: https://github.com/hhugo/odate
+[Home page](https://github.com/hhugo/odate)
 
+Copyright and license
+---------------------
+
+odate is distributed under the terms of the GNU Lesser General Public License
+version 2.1 with OCaml linking exception.
 
 (* OASIS_STOP *)
