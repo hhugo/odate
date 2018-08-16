@@ -1,0 +1,7 @@
+(menhir (modules duration_parser))
+(ocamllex (modules duration_lexer date_lexer))
+(library
+ (name odate)
+ (public_name odate)
+ (wrapped false)
+ (libraries unix))

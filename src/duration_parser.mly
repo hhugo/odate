@@ -30,9 +30,9 @@ expr(VD):
     { Duration_private.directive_block dir x }
   | l=nonempty_list(charlike) {
     let size = List.length l in
-    let s = String.create size in
-    List.iteri (fun i x -> s.[i] <- x) l;
-    Duration_private.static_printer s
+    let s = Bytes.create size in
+    List.iteri (fun i x -> Bytes.set s i x) l;
+    Duration_private.static_printer (Bytes.to_string s)
   }
 
 defined_value:

@@ -46,7 +46,7 @@ module Make (Date : ODate.S) = struct
   let tests = [test1;test2;test3]
 
   let _ = List.iter (fun test -> try test () with
-      | exc -> print_endline "test fail") tests
+      | _ -> print_endline "test fail") tests
 
 end
 

@@ -13,3 +13,6 @@ setup.log
 *.byte
 *.docdir
 *.odocl
+/odate.install
+/test/.merlin
+/src/.merlin

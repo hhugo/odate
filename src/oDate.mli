@@ -71,6 +71,7 @@ module type Clock = sig
   (** Convert a time in seconds, as returned by {!time}, into a
       date and a time. Assumes UTC (Coordinated Universal Time), also
       known as GMT. *)
+
   val localtime : float -> tm
   (** Convert a time in seconds, as returned by {!Unix.time}, into a
       date and a time. Assumes the local time zone. *)

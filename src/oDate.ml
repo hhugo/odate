@@ -76,6 +76,7 @@ module type Clock = sig
   (** Convert a time in seconds, as returned by {!time}, into a
       date and a time. Assumes UTC (Coordinated Universal Time), also
       known as GMT. *)
+
   val localtime : float -> tm
   (** Convert a time in seconds, as returned by {!Unix.time}, into a
       date and a time. Assumes the local time zone. *)
@@ -382,10 +383,11 @@ module Make(Implem : Implem) = struct
       length = String.length str
     }
 
+    (*
     let parse_constant s =
       let size = String.length s in
       (fun ptr ->
-        let {str;pos} = ptr in
+        let {str;pos; _} = ptr in
         let rec loop i =
           if i = size
           then ()
@@ -396,6 +398,7 @@ module Make(Implem : Implem) = struct
         let () = loop 0 in
         ptr.pos <- ptr.pos + size
       )
+       *)
 
     let parse_constant_i s =
       let (+++) a i = char_of_int ( int_of_char a + i) in
@@ -405,7 +408,7 @@ module Make(Implem : Implem) = struct
         || (c2 >= 'a' && c2 <= 'z' && c2 = (c1 +++ 32)) in
       let size = String.length s in
       (fun ptr ->
-        let {str;pos} = ptr in
+        let {str;pos;_} = ptr in
         let rec loop i =
           if i = size
           then ()
@@ -473,20 +476,22 @@ module Make(Implem : Implem) = struct
         end)
 
     let parse_single_char = parse_char ~min:1 ~max:1
-    let parse_char_plus x = parse_char ~min:1 x
+    (* let parse_char_plus x = parse_char ~min:1 x *)
 
 
     let (>>==) f g =
       (fun ptr -> g (f ptr))
     let (>>=|) f c =
-      (fun ptr -> f ptr; c)
+      (fun ptr -> ignore (f ptr); c)
 
-    let parse_remaining ptr =
+    (*
+let parse_remaining ptr =
       let size = String.length ptr.str in
       let s = String.sub ptr.str ptr.pos (size - ptr.pos) in
       ptr.pos <- size;
       s
-
+ *)
+      
     let parse_option p ptr=
       try Some (p ptr) with _ -> None
 
@@ -499,7 +504,7 @@ module Make(Implem : Implem) = struct
           let s = Weekday.to_string w in
           let s = if short then String.sub s 0 3 else s in
           loop (succ i) ((parse_constant_i s >>=| w) :: acc) in
-      parse_sum (loop 0 [(fun ptr -> failwith "weekday")])
+      parse_sum (loop 0 [(fun _ -> failwith "weekday")])
 
     let parse_month short =
       let rec loop i acc =
@@ -512,18 +517,22 @@ module Make(Implem : Implem) = struct
           loop (succ i) ((parse_constant_i s >>=| m) :: acc) in
       parse_sum (loop 1 [])
 
+    (*
     let parse_seq l ptr =
       let rec loop acc = function
         | [] -> List.rev acc
         | x::xs -> loop (x ptr :: acc) xs in
       loop [] l
-
+ *)
+        
+    (*
     let parse_fold f acc l ptr =
       let rec loop acc = function
         | [] -> acc
         | x::xs -> loop (f acc (x ptr)) xs in
       loop acc l
-
+ *)
+        
     let parse_sign =
       parse_sum [
         parse_single_char '-' >>=| (-);
@@ -634,7 +643,7 @@ module Make(Implem : Implem) = struct
         ) abbreviations in
       List.iter add_abbr abbr
 
-    let human ?tz {s;m;h;day;month;year;tz=tz'} =
+    let human ?tz {s;m;h;day;month;year;tz=tz';_} =
       let tz = match tz with
         | None -> tz'
         | Some x -> x in
@@ -767,7 +776,7 @@ module Make(Implem : Implem) = struct
     let a = a mod n in
     if a < 0 then a + n else a
 
-  let calendar_advance t {D.forward;h;m;s;day;month;year} =
+  let calendar_advance t {D.forward;h;m;s;day;month;year;_} =
     let human = To.human t in
     let add = if forward then (fun a x -> a + x) else (fun a x -> a - x) in
     let human = {human with
@@ -953,7 +962,7 @@ module MakeImplem(C : Clock) : Implem = struct
     let x = C.gmtime t in
     let y = C.localtime t in
     let x',_ = C.mktime x in
-    let y',{C.tm_isdst} = C.mktime y in
+    let y',{C.tm_isdst;_} = C.mktime y in
     let i = y' -. x' in
     if tm_isdst && not dst
     then int_of_float (i -. one_hour)
@@ -978,7 +987,7 @@ module MakeImplem(C : Clock) : Implem = struct
     }
   let now () = C.time ()
   let now_milliseconds () = C.gettimeofday () *. 1000.
-  let from_human ?tz {s;m;h;day;month;year;tz=tz'} =
+  let from_human ?tz {s;m;h;day;month;year;tz=tz';_} =
     let tz = match tz with
       | None -> tz'
       | Some tz -> tz in

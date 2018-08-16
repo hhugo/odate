@@ -1,5 +1,4 @@
 {
-open Lexing
 
 type options =
 [ `Pad of char

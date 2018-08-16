@@ -90,7 +90,7 @@ module D : S = struct
   end
 
   module To = struct
-    let ms t = int_of_float (O.to_float t)
+    (* let ms t = int_of_float (O.to_float t) *)
     let s_float t = O.(to_float (t / ms_in_s))
     let aux divide t = int_of_float (O.to_float t /. O.to_float divide)
     let s = aux ms_in_s
