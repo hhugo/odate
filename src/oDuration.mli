@@ -40,6 +40,7 @@ module type S = sig
     val human : human_readable -> t
   end
   module To : sig
+    val ms : t -> int
     val s : t -> int
     val s_float : t -> float
     val m : t -> int

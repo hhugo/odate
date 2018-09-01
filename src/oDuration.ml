@@ -37,6 +37,7 @@ module type S = sig
     val human : human_readable -> t
   end
   module To : sig
+    val ms : t -> int
     val s : t -> int
     val s_float : t -> float
     val m : t -> int
@@ -90,7 +91,7 @@ module D : S = struct
   end
 
   module To = struct
-    (* let ms t = int_of_float (O.to_float t) *)
+    let ms t = int_of_float (O.to_float t)
     let s_float t = O.(to_float (t / ms_in_s))
     let aux divide t = int_of_float (O.to_float t /. O.to_float divide)
     let s = aux ms_in_s
