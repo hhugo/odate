@@ -2,11 +2,16 @@ open Should
 
 module Make (Date : ODate.S) = struct
   module Duration = ODuration
+
   let format = "%a %b %d %T %:::z %Y"
-  let parseR = match Date.From.generate_parser format with
+
+  let parseR =
+    match Date.From.generate_parser format with
     | Some p -> p
     | None -> failwith "could not generate parser"
-  let printer = match Date.To.generate_printer format with
+
+  let printer =
+    match Date.To.generate_printer format with
     | Some p -> p
     | None -> failwith "could not generate printer"
 
@@ -19,15 +24,15 @@ module Make (Date : ODate.S) = struct
     let s1 = Duration.To.string Duration.To.default_printer d2 in
     let s2 = Duration.To.string Duration.To.default_printer d1 in
     let s3 = Duration.To.string Duration.To.default_printer d3 in
-    s1 $hould # equal (s3);
-    string s2 $hould # contain ("in 9 seconds");
-    string s3 $hould # contain ("just now")
+    s1 $ hould#equal s3;
+    string s2 $ hould#contain "in 9 seconds";
+    string s3 $ hould#contain "just now"
 
   let test2 () =
     let d_string = "Wed May 29 20:20:23 +00 2013" in
     let d = Date.From.string parseR d_string in
     let s = Date.To.string printer d in
-    s $hould # equal(d_string)
+    s $ hould#equal d_string
 
   let test3 () =
     let s = Date.now () in
@@ -42,12 +47,12 @@ module Make (Date : ODate.S) = struct
       print_endline s'''
     done
 
+  let tests = [ test1; test2; test3 ]
 
-  let tests = [test1;test2;test3]
-
-  let _ = List.iter (fun test -> try test () with
-      | _ -> print_endline "test fail") tests
-
+  let _ =
+    List.iter
+      (fun test -> try test () with _ -> print_endline "test fail")
+      tests
 end
 
-module USELESS = Make(ODate.Unix)
+module USELESS = Make (ODate.Unix)
