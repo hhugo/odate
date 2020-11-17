@@ -12,5 +12,5 @@ depends: [
   "base-unix"
 ]
 dev-repo: "git://github.com/hhugo/odate"
-available: [ ocaml-version >= "4.00.0" ]
+available: [ ocaml-version >= "4.07.0" ]
 
