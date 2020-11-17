@@ -939,7 +939,7 @@ end
 module MakeImplem(C : Clock) : Implem = struct
   type t = float
 
-  let compare = Pervasives.compare
+  let compare = Stdlib.compare
 
   let add f i = f +. i
   let from_seconds x = x

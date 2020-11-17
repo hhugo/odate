@@ -1,4 +1,4 @@
-module P = Pervasives
+module P = Stdlib
 
 module O : sig
 
