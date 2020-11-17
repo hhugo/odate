@@ -12,6 +12,7 @@ depends: [
   "dune" {build}
   "menhir" {build}
   "base-unix"
+  "ppx_expect" {with-test}
 ]
 synopsis: "Date & Duration Library"
 description: """

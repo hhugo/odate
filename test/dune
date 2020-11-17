@@ -1,3 +1,5 @@
-(test
+(library
  (name test)
- (libraries odate lwt lwt.unix should))
+ (libraries odate lwt lwt.unix)
+ (inline_tests)
+ (preprocess (pps ppx_expect)))
