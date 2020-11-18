@@ -22,4 +22,4 @@ based on string format. Already implemented in opalang
 [http://opalang.org/]. For documentation about the format, see :
 [http://doc.opalang.org/value/stdlib.core.date/Duration/try_generate_printer].
 """
-dev-repo: "https://github.com/hhugo/odate.git"
+dev-repo: "git+https://github.com/hhugo/odate.git"
