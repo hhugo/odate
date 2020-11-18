@@ -13,5 +13,4 @@ instructions.
 Copyright and license
 ---------------------
 
-odate is distributed under the terms of the GNU Lesser General Public License
-version 2.1 with OCaml linking exception.
+odate is distributed under the MIT License.

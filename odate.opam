@@ -1,8 +1,9 @@
 opam-version: "2.0"
 maintainer: "hugo.heuzard@gmail.com"
 authors: [ "Hugo Heuzard" ]
-license: "LGPL-2.1 with OCaml linking exception"
+license: "MIT"
 homepage: "https://github.com/hhugo/odate"
+bug-reports:  "https://github.com/hhugo/odate/issues"
 build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
