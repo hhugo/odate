@@ -4,75 +4,42 @@ module O : sig
   type t
 
   val ( * ) : t -> t -> t
-
   val ( + ) : t -> t -> t
-
   val ( - ) : t -> t -> t
-
   val ( / ) : t -> t -> t
-
   val abs : t -> t
-
   val of_int : int -> t
-
   val of_float : float -> t
-
   val compare : t -> t -> int
-
   val lt : t -> t -> bool
-
   val le : t -> t -> bool
-
   val gt : t -> t -> bool
-
   val ge : t -> t -> bool
-
   val to_string : t -> string
-
   val zero : t
-
   val one : t
-
   val to_float : t -> float
-
   val to_int : t -> int
-
   val div : t -> t -> int * t
 end = struct
   type t = float
 
   let ( * ) = ( *. )
-
   let ( + ) = ( +. )
-
   let ( - ) = ( -. )
-
   let ( / ) = ( /. )
-
   let abs = abs_float
-
   let of_int = float_of_int
-
   let of_float x = x
-
   let compare (a : float) (b : float) = compare a b
-
   let lt a b = compare a b < 0
-
   let le a b = compare a b <= 0
-
   let gt a b = compare a b > 0
-
   let ge a b = compare a b >= 0
-
   let to_string x = string_of_int (int_of_float x)
-
   let zero = 0.0
-
   let one = 1.0
-
   let to_float x = x
-
   let to_int x = int_of_float x
 
   let div duration diviseur =
@@ -84,35 +51,20 @@ end
 open O
 
 let ms_in_ms = of_int 1
-
 let ms_in_s = of_int 1000
-
 let s_in_s = of_int 1
-
 let s_in_min = of_int 60
-
 let ms_in_min = ms_in_s * s_in_min
-
 let min_in_hour = of_int 60
-
 let ms_in_hour = ms_in_min * min_in_hour
-
 let hour_in_day = of_int 24
-
 let ms_in_day = ms_in_hour * hour_in_day
-
 let day_in_week = of_int 7
-
 let ms_in_week = ms_in_day * day_in_week
-
 let day_in_year = of_float 365.24219879
-
 let month_in_year = of_int 12
-
 let day_in_month = day_in_year / month_in_year
-
 let ms_in_month = ms_in_day * day_in_month
-
 let ms_in_year = ms_in_day * day_in_year
 
 let fact_of_directive = function
@@ -138,7 +90,6 @@ let apply_directive dir d =
     (new_d, v')
 
 let static_printer s : O.t -> O.t -> string = fun _ _ -> s
-
 let empty_printer = static_printer ""
 
 let show_value (w : int) (_d : O.t) v =

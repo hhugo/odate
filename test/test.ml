@@ -48,7 +48,8 @@ let%expect_test "test3" =
     let s''' = Date.To.string ~tz:ODate.Local printer s'' in
     print_endline s'''
   done;
-  [%expect {|
+  [%expect
+    {|
     Wed May 29 21:20:23 +01 2013
     Fri May 31 21:20:23 +01 2013
     Sun Jun 30 21:20:23 +01 2013
