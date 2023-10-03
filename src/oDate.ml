@@ -16,11 +16,8 @@ type month =
   | `December ]
 
 type year = int
-
 type day = int
-
 type tz_internal = int
-
 type tz = UTC | Local | Plus of tz_internal
 
 type human_readable = {
@@ -35,11 +32,8 @@ type human_readable = {
 }
 
 type pointer = { mutable pos : int; str : string; length : int }
-
 type printer = human_readable -> string
-
 type format = string
-
 type parser_ = pointer -> human_readable -> human_readable
 
 module type Clock = sig
@@ -89,59 +83,35 @@ module type Implem = sig
   type t
 
   val compare : t -> t -> int
-
   val to_human : ?tz:tz -> t -> human_readable
-
   val from_human : ?tz:tz -> human_readable -> t
-
   val now : unit -> t
-
   val now_milliseconds : unit -> float
-
   val get_std_timezone : unit -> tz_internal
-
   val get_dst_timezone : t -> tz_internal
-
   val add : t -> float -> t
-
   val from_seconds : float -> t
-
   val to_seconds : t -> float
 end
 
 module type S = sig
   type t
-
   type d = ODuration.t
 
   val beginning_of_the_day : ?tz:tz -> t -> t
-
   val beginning_of_the_month : ?tz:tz -> t -> t
-
   val beginning_of_the_week : ?tz:tz -> t -> t
-
   val end_of_the_day : ?tz:tz -> t -> t
-
   val end_of_the_month : ?tz:tz -> t -> t
-
   val end_of_the_week : ?tz:tz -> t -> t
-
   val gmt : tz
-
   val compare : t -> t -> int
-
   val empty : human_readable
-
   val some_if_valid : t -> t option
-
   val now : unit -> t
-
   val now_milliseconds : unit -> float
-
   val get_std_timezone : unit -> tz_internal
-
   val get_dst_timezone : t -> tz_internal
-
   val epoch : t
 
   val make :
@@ -157,134 +127,79 @@ module type S = sig
 
   (* make date in gmt *)
   val move : t -> d -> t
-
   val advance_by_minutes : t -> int -> t
-
   val advance_by_hours : t -> int -> t
-
   val advance_by_days : t -> int -> t
-
   val advance_by_months : t -> int -> t
-
   val advance_by_years : t -> int -> t
-
   val convert_with_tz : tz -> tz -> t -> t
-
   val advance_by_weeks : t -> int -> t
-
   val move_to_weekday : ?tz:tz -> t -> forward:bool -> weekday -> t
-
   val calendar_advance : t -> ODuration.human_readable -> t
-
   val between : t -> t -> d
-
   val in_between : t -> t -> t
-
   val max : t -> t -> t
-
   val min : t -> t -> t
-
   val is_after : t -> t -> bool
-
   val is_before : t -> t -> bool
-
   val is_epoch : t -> bool
-
   val get_age : t -> int
-
   val get_weekday : ?tz:tz -> t -> weekday
-
   val get_day : ?tz:tz -> t -> int
-
   val get_month : ?tz:tz -> t -> month
-
   val get_year : ?tz:tz -> t -> year
-
   val get_first_week : ?tz:tz -> year -> t
-
   val get_week_number : ?tz:tz -> t -> int
-
   val get_min : ?tz:tz -> t -> int
-
   val get_hour : ?tz:tz -> t -> int
-
   val get_sec : ?tz:tz -> t -> int
 
   module Format : sig
     val default : string
-
     val debug : string
-
     val birthday : string
-
     val iso : string
   end
 
   module Printer : sig
     val combine : printer -> printer -> printer
-
     val default : printer
-
     val debug : printer
-
     val birthday : printer
-
     val iso : printer
-
     val to_default : t -> string
-
     val to_debug : t -> string
-
     val to_birthday : t -> string
-
     val to_iso : t -> string
   end
 
   module Parser : sig
     val combine : parser_ -> parser_ -> parser_
-
     val sum : parser_ list -> parser_
-
     val twitter : parser_
-
     val runkeeper : parser_
-
     val nike : parser_
-
     val birthday : parser_
-
     val from_nike : string -> t
-
     val from_runkeeper : string -> t
-
     val from_twitter : string -> t
-
     val from_birthday : string -> t
-
     val from_iso : string -> t
   end
 
   module From : sig
     val seconds : int -> t
-
     val seconds_float : float -> t
-
     val generate_parser : string -> parser_ option
-
     val string : parser_ -> string -> t
-
     val human : ?tz:tz -> human_readable -> t
   end
 
   module To : sig
     val seconds : t -> int
-
     val seconds_float : t -> float
-
     val generate_printer : string -> printer option
-
     val string : ?tz:tz -> printer -> t -> string
-
     val human : ?tz:tz -> t -> human_readable
   end
 end
@@ -301,7 +216,6 @@ let date_token s =
 
 module Hour = struct
   let is_am h = h < 12
-
   let convert_24h_to_12h h = if h > 12 then h - 12 else h
 end
 
@@ -336,7 +250,6 @@ module Weekday = struct
       | `Saturday -> "Saturday")
 
   let set_stringifier f = stringifier := f
-
   let to_string x = !stringifier x
 
   let stringifier_abbr =
@@ -350,7 +263,6 @@ module Weekday = struct
       | `Saturday -> "Sat")
 
   let set_stringifier_abbr f = stringifier_abbr := f
-
   let to_string_short x = !stringifier_abbr x
 end
 
@@ -400,7 +312,6 @@ module Month = struct
       | `December -> "December")
 
   let set_stringifier f = stringifier := f
-
   let to_string x = !stringifier x
 
   let stringifier_abbr =
@@ -419,7 +330,6 @@ module Month = struct
       | `December -> "Dec")
 
   let set_stringifier_abbr f = stringifier_abbr := f
-
   let to_string_short x = !stringifier_abbr x
 
   let next m =
@@ -438,7 +348,6 @@ module Make (Implem : Implem) = struct
   type d = D.t
 
   let gmt = UTC
-
   let now () = Implem.now ()
 
   let empty =
@@ -454,7 +363,6 @@ module Make (Implem : Implem) = struct
     }
 
   let epoch = Implem.from_seconds 0.
-
   let some_if_valid t = if epoch = t then None else Some t
 
   let make ?tz ?(s = 0) ?(m = 0) ?(h = 0) ~day ~month ~year () =
@@ -523,7 +431,7 @@ module Make (Implem : Implem) = struct
             try
               ptr.pos <- pos;
               f ptr
-            with _ -> loop fs )
+            with _ -> loop fs)
       in
       loop l
 
@@ -569,11 +477,8 @@ module Make (Implem : Implem) = struct
         l
 
     let parse_single_char = parse_char ~min:1 ~max:1
-
     let _parse_char_plus x = parse_char ~min:1 x
-
     let ignore' f ptr = ignore (f ptr)
-
     let ( >>== ) f g ptr = g (f ptr)
 
     let ( >>=| ) f c ptr =
@@ -653,7 +558,6 @@ module Make (Implem : Implem) = struct
       parse_sum [ other; gmt ]
 
     let seconds x = Implem.from_seconds (float_of_int x)
-
     let seconds_float x = Implem.from_seconds x
 
     let parse_pm =
@@ -765,7 +669,6 @@ module Make (Implem : Implem) = struct
 
   module To = struct
     let seconds t = int_of_float (Implem.to_seconds t)
-
     let seconds_float t = Implem.to_seconds t
 
     let fill s size c =
@@ -867,7 +770,7 @@ module Make (Implem : Implem) = struct
                   | _ ->
                       fun buf d ->
                         let s = f (p, d) in
-                        Buffer.add_string buf s )
+                        Buffer.add_string buf s)
               | EOL -> assert false)
             tokens
         in
@@ -904,21 +807,13 @@ module Make (Implem : Implem) = struct
     Implem.add t1 d
 
   let get_year ?tz t = (To.human ?tz t).year
-
   let get_month ?tz t = (To.human ?tz t).month
-
   let get_day ?tz t = (To.human ?tz t).day
-
   let get_weekday ?tz t = (To.human ?tz t).wday
-
   let get_sec ?tz t = (To.human ?tz t).s
-
   let get_min ?tz t = (To.human ?tz t).m
-
   let get_hour ?tz t = (To.human ?tz t).h
-
   let get_std_timezone () : tz_internal = Implem.get_std_timezone ()
-
   let get_dst_timezone dst : tz_internal = Implem.get_dst_timezone dst
 
   let mod_normalized a n =
@@ -949,9 +844,7 @@ module Make (Implem : Implem) = struct
     From.human human
 
   let advance_by_minutes t h = move t (D.From.m h)
-
   let advance_by_hours t h = move t (D.From.h h)
-
   let advance_by_days t day = calendar_advance t { D.zero_human with D.day }
 
   let advance_by_weeks t n =
@@ -1021,13 +914,9 @@ module Make (Implem : Implem) = struct
     (d / 7) + 1
 
   let max a b = max a b
-
   let min a b = min a b
-
   let is_after t1 t2 = t1 > t2
-
   let is_before t1 t2 = t1 < t2
-
   let is_epoch t = t = epoch
 
   let get_age d =
@@ -1042,11 +931,8 @@ module Make (Implem : Implem) = struct
 
   module Format = struct
     let default = "%c"
-
     let debug = "%Y-%m-%d | %H:%M:%S"
-
     let birthday = "%m/%d/%Y"
-
     let iso = "%FT%TZ"
   end
 
@@ -1061,19 +947,12 @@ module Make (Implem : Implem) = struct
       | None -> failwith "could not generate printer"
 
     let default = generate_or_exit Format.default
-
     let debug = generate_or_exit Format.debug
-
     let birthday = generate_or_exit Format.birthday
-
     let iso = generate_or_exit Format.iso
-
     let to_default = To.string default
-
     let to_debug = To.string debug
-
     let to_birthday = To.string birthday
-
     let to_iso = To.string ~tz:gmt iso
   end
 
@@ -1090,23 +969,14 @@ module Make (Implem : Implem) = struct
       | None -> failwith "could not generate parser"
 
     let twitter = generate_or_exit "%a %b %d %T %z %Y"
-
     let runkeeper = generate_or_exit "%a, %d %b %Y %H:%M:%S"
-
     let nike = generate_or_exit "%FT%Tz"
-
     let birthday = generate_or_exit Format.birthday
-
     let iso = generate_or_exit Format.iso
-
     let from_nike = From.string nike
-
     let from_runkeeper = From.string runkeeper
-
     let from_twitter = From.string twitter
-
     let from_birthday = From.string birthday
-
     let from_iso = From.string iso
   end
 end
@@ -1115,13 +985,9 @@ module MakeImplem (C : Clock) : Implem = struct
   type t = float
 
   let compare = Stdlib.compare
-
   let add f i = f +. i
-
   let from_seconds x = x
-
   let to_seconds x = x
-
   let one_hour = 3600.
 
   let timezone_s ?dst () =
@@ -1136,7 +1002,6 @@ module MakeImplem (C : Clock) : Implem = struct
     if tm_isdst && not dst then int_of_float (i -. one_hour) else int_of_float i
 
   let get_std_timezone () = timezone_s ()
-
   let get_dst_timezone dst = timezone_s ~dst ()
 
   let to_human ?(tz = UTC) t =
@@ -1165,7 +1030,6 @@ module MakeImplem (C : Clock) : Implem = struct
     }
 
   let now () = C.time ()
-
   let now_milliseconds () = C.gettimeofday () *. 1000.
 
   let from_human ?tz { s; m; h; day; month; year; tz = tz'; wday = _ } =
