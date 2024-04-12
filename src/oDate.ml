@@ -664,8 +664,7 @@ module Make (Implem : Implem) = struct
 
     let string (parser_ : parser_) (s : string) =
       let ptr = make_state s in
-      try human (parser_ ptr empty)
-      with Invalid_argument s -> failwith s
+      try human (parser_ ptr empty) with Invalid_argument s -> failwith s
   end
 
   module To = struct
